@@ -1,4 +1,4 @@
-from authlib.integrations.starlette_client import OAuth, OAuthError
+from authlib.integrations.starlette_client import OAuth
 from main import app
 from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 

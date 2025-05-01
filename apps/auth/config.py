@@ -42,12 +42,12 @@ AUTH_PORT = os.getenv("AUTH_PORT", 8005)
 
 if not os.getenv("ISSUER"):
     raise ValueError(
-        "\033[31m[ERROR]\033[0m \033[107mISSUER not set, please set it in the .env file\033[0m"
+        format_error_message("ISSUER not set, please set it in the .env file")
     )
 ISSUER = os.getenv("ISSUER")
 if not os.getenv("AUTH_KEY"):
     raise ValueError(
-        "\033[31m[ERROR]\033[0m \033[107mAUTH_KEY not set, please set it in the .env file\033[0m"
+        format_error_message("AUTH_KEY not set, please set it in the .env file")
     )
 AUTH_KEY = os.getenv("AUTH_KEY")
 if not os.getenv("ISSECURE"):
@@ -56,16 +56,16 @@ try:
     ISSECURE = bool(os.getenv("ISSECURE", False))
 except ValueError:
     raise ValueError(
-        "\033[31m[ERROR]\033[0m \033[107mISSECURE must be a boolean value, please set it in the .env file\033[0m"
+        format_error_message("ISSECURE must be a boolean value, please set it in the .env file")
     )
-if "google" in os.getenv("SOCIAL_LOGINS"):
+if "google" in os.getenv("SOCIAL_LOGINS", ""):
     if not os.getenv("GOOGLE_CLIENT_ID"):
         raise ValueError(
-            "\033[31m[ERROR]\033[0m \033[107mGOOGLE_CLIENT_ID not set, please set it in the .env file\033[0m"
+            format_error_message("GOOGLE_CLIENT_ID not set, please set it in the .env file")
         )
     if not os.getenv("GOOGLE_CLIENT_SECRET"):
         raise ValueError(
-            "\033[31m[ERROR]\033[0m \033[107mGOOGLE_CLIENT_SECRET not set, please set it in the .env file\033[0m"
+            format_error_message("GOOGLE_CLIENT_SECRET not set, please set it in the .env file")
         )
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")

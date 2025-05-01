@@ -1,5 +1,4 @@
 from fastapi import FastAPI, HTTPException, Response
-from fastapi import FastAPI
 import uvicorn
 import models
 from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE

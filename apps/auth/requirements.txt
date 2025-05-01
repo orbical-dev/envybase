@@ -1,9 +1,9 @@
 uvicorn~=0.34.2
 fastapi~=0.115.12
-pymongo
+pymongo~=4.6.0
 python-dotenv~=1.1.0
 pydantic~=2.11.4
 pydantic[email]
-bcrypt
-PyJWT
-authlib
+bcrypt~=4.0.1
+PyJWT~=2.8.0
+authlib~=1.2.1
