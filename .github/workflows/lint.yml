@@ -1,0 +1,26 @@
+name: Lint Python Code
+permissions: read-all
+on:
+  push:
+    branches: ['*']  # This triggers on all branches
+  pull_request:
+    branches: ['*']  # This triggers on all branches
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff Lint with Fix
+        run: ruff check . --fix
