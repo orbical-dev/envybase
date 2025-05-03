@@ -15,7 +15,7 @@ oauth.register(
     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
 )
 
-#oauth.register( # Coming soon!!!!
+# oauth.register( # Coming soon!!!!
 #    name="microsoft",
 #    client_id=MICROSOFT_CLIENT_ID,
 #    client_secret=MICROSOFT_CLIENT_SECRET,
@@ -24,4 +24,4 @@ oauth.register(
 #    userinfo_endpoint="https://www.googleapis.com/oauth2/v2/userinfo",
 #    client_kwargs={"scope": "openid email profile"},
 #    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-#)
+# )

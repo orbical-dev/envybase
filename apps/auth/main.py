@@ -12,6 +12,7 @@ app = FastAPI(
     version="0",
 )
 
+
 @app.get("/", summary="Health check")
 def read_root():
     return {"status": "healthy", "service": "auth"}
@@ -34,7 +35,11 @@ def login(response: Response, data: models.LoginData):
     user = users.find_one({"email": data.email})
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    token = create_jwt_token({"sub": user["sub"],})
+    token = create_jwt_token(
+        {
+            "sub": user["sub"],
+        }
+    )
     response.set_cookie(
         key="access_token",
         value=token,
@@ -43,6 +48,7 @@ def login(response: Response, data: models.LoginData):
         samesite="lax",
     )
     return {"status": "success", "logged_in_as": user["email"]}
+
 
 if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")

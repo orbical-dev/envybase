@@ -14,13 +14,15 @@ def init_db():
     global client, db, users
 
     try:
-        client = MongoClient(MONGO_URI,
-                             maxPoolSize=50,
-                             connectTimeoutMS=5000,
-                             serverSelectionTimeoutMS=5000,
-                             waitQueueTimeoutMS=5000)
+        client = MongoClient(
+            MONGO_URI,
+            maxPoolSize=50,
+            connectTimeoutMS=5000,
+            serverSelectionTimeoutMS=5000,
+            waitQueueTimeoutMS=5000,
+        )
         # Verify connection
-        client.admin.command('ping')
+        client.admin.command("ping")
 
         # Database name defined as a constant until configuration is updated
         DB_NAME = "envybase"
@@ -32,7 +34,9 @@ def init_db():
 
         return True
     except ConnectionFailure as e:
-        raise Exception(f"Failed to connect to MongoDB: {str(e)}. Please check your connection settings.") from e
+        raise Exception(
+            f"Failed to connect to MongoDB: {str(e)}. Please check your connection settings."
+        ) from e
 
 
 def close_db_connection():

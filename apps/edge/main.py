@@ -30,9 +30,14 @@ def create_edge_function(data: EdgeFunction):
     db_insert = {
         "name": data.name,
         "code": data.code,
-        "created_at": datetime.datetime.now()
+        "created_at": datetime.datetime.now(),
     }
-    
+    try:
+        edge_db.insert_one(db_insert)
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")
     uvicorn.run(app, host="0.0.0.0", port=int(EDGE_PORT))
