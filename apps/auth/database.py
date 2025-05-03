@@ -23,7 +23,7 @@ def init_db():
         client.admin.command('ping')
 
         # Database name defined as a constant until configuration is updated
-        DB_NAME = "wyra"
+        DB_NAME = "envybase"
         db = client[DB_NAME]
         users = db["users"]
 
