@@ -35,7 +35,7 @@ def create_edge_function(data: EdgeFunction):
     try:
         edge_db.insert_one(db_insert)
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return {"status": "error", "message": "Faild to create function."}
 
 
 if __name__ == "__main__":
