@@ -1,6 +1,6 @@
 import bcrypt
-from typing import Dict, Optional
-from datetime import datetime, timedelta, timezone
+from typing import Dict
+from datetime import datetime, timezone
 import jwt
 from config import ISSUER, AUTH_KEY
 
