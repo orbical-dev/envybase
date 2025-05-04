@@ -10,3 +10,4 @@ else
     echo "Publishing to PyPI..."
     python3 -m twine upload dist/*
 fi
+rm -rf dist
