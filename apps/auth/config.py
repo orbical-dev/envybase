@@ -35,6 +35,14 @@ if not os.getenv("PASSWORD_MAX_LENGTH"):
     )
 PASSWORD_MIN_LENGTH = int(os.getenv("PASSWORD_MIN_LENGTH", 8))
 PASSWORD_MAX_LENGTH = int(os.getenv("PASSWORD_MAX_LENGTH", 32))
+USERNAME_MIN_LENGTH = int(os.getenv("USERNAME_MIN_LENGTH", 3))
+USERNAME_MAX_LENGTH = int(os.getenv("USERNAME_MAX_LENGTH", 32))
+if not os.getenv("USERNAME_MIN_LENGTH"):
+    print("\033[33m[WARN]\033[0m USERNAME_MIN_LENGTH not set, using default value of 3")
+if not os.getenv("USERNAME_MAX_LENGTH"):
+    print(
+        "\033[33m[WARN]\033[0m USERNAME_MAX_LENGTH not set, using default value of 32"
+    )
 
 if not os.getenv("AUTH_PORT"):
     print("\033[33m[WARN]\033[0m AUTH_PORT not set, using default value of 8005")
@@ -69,3 +77,5 @@ if "google" in os.getenv("SOCIAL_LOGINS", ""):
         )
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
+ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)

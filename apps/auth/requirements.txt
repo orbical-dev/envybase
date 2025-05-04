@@ -7,3 +7,4 @@ pydantic[email]
 bcrypt~=4.0.1
 PyJWT~=2.8.0
 authlib~=1.2.1
+pytz~=2023.3
