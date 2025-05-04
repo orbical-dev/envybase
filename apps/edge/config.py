@@ -18,7 +18,7 @@ if not os.getenv("MONGO_URI"):
 
 if not os.getenv("EDGE_PORT"):
     raise ValueError(
-        format_error_message("AUTH_PORT not set, please set it in the .env file"),
+        format_error_message("EDGE_PORT not set, please set it in the .env file"),
     )
 MONGO_URI = os.getenv("MONGO_URI")
 EDGE_PORT = os.getenv("EDGE_PORT")
