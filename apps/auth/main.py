@@ -2,16 +2,17 @@ from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
 from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE
-import database as db
 from database import users
 from utils import hash_password, verify_password, create_jwt_token, decode_jwt_token
 from decorator import loggers_route
+
 
 app = FastAPI(
     title="Envybase Authentication Service",
     description="Authentication microservice for Envybase",
     version="0",
 )
+
 
 @app.get("/", summary="Health check")
 @loggers_route()
@@ -38,7 +39,11 @@ def login(request: Request, response: Response, data: models.LoginData):
     user = users.find_one({"email": data.email})
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
-    token = create_jwt_token({"sub": user["sub"],})
+    token = create_jwt_token(
+        {
+            "sub": user["sub"],
+        }
+    )
     response.set_cookie(
         key="access_token",
         value=token,
@@ -47,6 +52,7 @@ def login(request: Request, response: Response, data: models.LoginData):
         samesite="lax",
     )
     return {"status": "success", "logged_in_as": user["email"]}
+
 
 @app.post("/register")
 @loggers_route()
@@ -67,6 +73,7 @@ def register(request: Request, data: models.RegisterData):
     }
     users.insert_one(user_data)
     return {"status": "success", "message": "User registered successfully"}
+
 
 if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")
