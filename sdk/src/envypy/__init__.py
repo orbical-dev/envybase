@@ -1,4 +1,4 @@
-__version__ = "0.0.2"
+__version__ = "0.0.5"
 from edge_functions import EdgeFunctions
 
 
