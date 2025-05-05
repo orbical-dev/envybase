@@ -1,13 +1,12 @@
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
--from config import MONGO_URI
-+from apps.edge.config import MONGO_URI
+from config import MONGO_URI
 import atexit
 
 # Initialize with None so we can check if connection is established
 client = None
 db = None
-edge_db = None
+users = None
 
 
 def init_db():

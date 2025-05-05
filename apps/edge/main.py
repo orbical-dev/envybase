@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 import uvicorn
-from apps.edge.config import EDGE_PORT
-from apps.edge.database import edge_db
-from apps.edge.models import EdgeFunction
+from config import EDGE_PORT
+from database import edge_db
+from models import EdgeFunction
 import datetime
 
 app = FastAPI(
@@ -32,22 +32,13 @@ def create_edge_function(data: EdgeFunction):
         "code": data.code,
         "created_at": datetime.datetime.now(),
     }
-# At the top of apps/edge/main.py
-import logging
-
-# Add at the module level
-logger = logging.getLogger(__name__)
-
-# … later in your function …
-
     try:
         edge_db.insert_one(db_insert)
-    except Exception as e:
-        logger.error(f"Failed to create edge function '{data.name}': {str(e)}")
+    except Exception:
         return {"status": "error", "message": "Fail to create function."}
 
 
 if __name__ == "__main__":
-    print("Starting Envybase Edge Function Service...")
+    print("Starting Envybase Authentication Service...")
     uvicorn.run(app, host="0.0.0.0", port=int(EDGE_PORT))
-    print("Stopping Envybase Edge Function Service...")
+    print("Stopping Envybase Authentication Service...")

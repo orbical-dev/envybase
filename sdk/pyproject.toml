@@ -17,11 +17,7 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
-dependencies = [
-    "requests>=2.27.0",
-]
 
 [project.urls]
-[project.urls]
 Homepage = "https://github.com/orbical-dev/envybase"
-Issues   = "https://github.com/orbical-dev/envybase/issues"
+Issues = "https://github.com/pypa/orbical-dev/envybase/issues"
