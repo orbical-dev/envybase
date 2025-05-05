@@ -247,7 +247,3 @@ fabric.properties
 
 # Uvicorn certs
 *.
-
-# .vscode
-
-.vscode

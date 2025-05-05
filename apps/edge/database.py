@@ -7,12 +7,11 @@ import atexit
 client = None
 db = None
 users = None
-logs = None
 
 
 def init_db():
     """Initialize database connection."""
-    global client, db, users, logs
+    global client, db, edge_db
 
     try:
         client = MongoClient(
@@ -28,8 +27,7 @@ def init_db():
         # Database name defined as a constant until configuration is updated
         DB_NAME = "envybase"
         db = client[DB_NAME]
-        users = db["users"]
-        logs = db["logs"]
+        edge_db = db["edge_functions"]
 
         # Register cleanup function
         atexit.register(close_db_connection)
