@@ -27,6 +27,7 @@ oauth.register(
 #    client_kwargs={"scope": "openid email profile"},
 #    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
 
+
 @app.get("/oauth2/login/{provider}")
 @loggers_route()
 async def login_with_oauth2(request, provider: str):
@@ -40,4 +41,3 @@ async def login_with_oauth2(request, provider: str):
     #     return await oauth.microsoft.authorize_redirect(request, redirect_uri)
     else:
         raise HTTPException(status_code=400, detail="Unsupported provider")
-
