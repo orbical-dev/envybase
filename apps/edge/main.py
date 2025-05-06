@@ -4,6 +4,7 @@ from config import EDGE_PORT
 from database import edge_db
 from models import EdgeFunction
 import datetime
+from decorator import loggers_route
 
 app = FastAPI(
     title="Envybase Edge function Service",
@@ -13,11 +14,14 @@ app = FastAPI(
 
 
 @app.get("/", summary="Health check")
+@loggers_route()
 def read_root():
     return {"status": "healthy", "service": "edge"}
 
 
+# TODO: Add authentication. NOT USER AUTH BUT UNIQUE AUTH SET IN THE .env
 @app.post("/create", summary="Create a new edge function")
+@loggers_route()
 def create_edge_function(data: EdgeFunction):
     """
     Create a new edge function.
