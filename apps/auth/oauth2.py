@@ -27,6 +27,7 @@ oauth.register(
 #    client_kwargs={"scope": "openid email profile"},
 #    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
 
+# TODO: Properly implement OAuth2
 
 @app.get("/oauth2/login/{provider}")
 @loggers_route()
