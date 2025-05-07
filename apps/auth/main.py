@@ -3,7 +3,7 @@ import uvicorn
 import models
 from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE
 from database import users
-from utils import hash_password, verify_password, create_jwt_token, decode_jwt_token
+from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
 
 

@@ -1,5 +1,10 @@
 from pydantic import BaseModel, EmailStr, Field
-from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH, USERNAME_MAX_LENGTH
+from config import (
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    USERNAME_MIN_LENGTH,
+    USERNAME_MAX_LENGTH,
+)
 
 
 class LoginData(BaseModel):
@@ -14,6 +19,7 @@ class LoginData(BaseModel):
         max_length=PASSWORD_MAX_LENGTH,
         description=f"Must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters",
     )
+
 
 class RegisterData(BaseModel):
     """
