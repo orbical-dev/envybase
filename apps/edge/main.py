@@ -5,6 +5,7 @@ from database import edge_db
 from models import EdgeFunction
 import datetime
 from decorator import loggers_route
+from runtime import create_build_function
 
 app = FastAPI(
     title="Envybase Edge function Service",
@@ -38,6 +39,8 @@ def create_edge_function(data: EdgeFunction):
     }
     try:
         edge_db.insert_one(db_insert)
+        create_build_function(data.code, data.name)
+        return {"status": "success", "message": "Function created successfully"}
     except Exception:
         return {"status": "error", "message": "Fail to create function."}
 
