@@ -19,9 +19,17 @@ def real_ip(request: Request) -> str:
     If the request is from Cloudflare, use the 'CF-Connecting-IP' header.
     Otherwise, use the 'X-Real-IP' header or the remote address.
     """
+    # Default fallback IP if nothing else is available
+    default_ip = "0.0.0.0"
+    
     if ISCLOUDFLARE:
-        return request.headers.get("CF-Connecting-IP", request.client.host)
-    return request.headers.get("X-Real-IP", request.client.host)
+        # Use Cloudflare header first, then try client host, fall back to default
+        client_host = request.client.host if request.client else default_ip
+        return request.headers.get("CF-Connecting-IP", client_host)
+    else:
+        # Use X-Real-IP header first, then try client host, fall back to default
+        client_host = request.client.host if request.client else default_ip
+        return request.headers.get("X-Real-IP", client_host)
 
 
 def loggers_route():
@@ -74,25 +82,43 @@ def loggers_route():
 
                 # Log successful execution
                 status_code = getattr(response, "status_code", 200)
++                # Get a new timestamp for the response
++                response_time = datetime.now(pytz.UTC)
++                response_utc = response_time.strftime("%Y-%m-%d %H:%M:%S")
+
                 logger.info(
-                    f"[{utc_now}]"
-                    f"Response: Method={request.method} "
-                    f"Path={request.url.path} "
-                    f"Status={status_code} "
-                    f"Client={real_ip(request)} "
-                )
-                logs.update_one(
-                    {
-                        "method": request.method,
-                        "path": request.url.path,
-                        "client": real_ip(request),
-                        "timestamp": utc_now,
-                    },
-                    {"$set": {"status_code": status_code}},
-                )
+-                    f"[{utc_now}]"
++                    f"[{request_id}][{response_utc}]"
+                     f"Response: Method={request.method} "
+                     f"Path={request.url.path} "
+                     f"Status={status_code} "
+                     f"Client={real_ip(request)} "
+                 )
+-                logs.update_one(
+-                    {
+-                        "method": request.method,
+-                        "path": request.url.path,
+-                        "client": real_ip(request),
+-                        "timestamp": utc_now,
+-                    },
+-                    {"$set": {"status_code": status_code}},
+-                )
++                try:
++                    # Update using the request_id for accurate matching
++                    logs.update_one(
++                        {"request_id": request_id},
++                        {
++                            "$set": {
++                                "status_code": status_code,
++                                "response_time": response_utc,
++                                "duration_ms": (response_time - request_time).total_seconds() * 1000
++                            }
++                        }
++                    )
++                except Exception as db_error:
++                    logger.error(f"[{request_id}] Failed to update log: {db_error}")
 
                 return response
-
             except Exception as e:
                 # Log the error
                 logger.error(
