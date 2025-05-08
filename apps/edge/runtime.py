@@ -1,7 +1,7 @@
 import random
-import string
 import docker
 import os
+
 
 def random_name():
     """Generate a random name."""
@@ -42,6 +42,7 @@ def random_name():
     ]
     return random.choice(verbs) + "_" + random.choice(nouns)
 
+
 def generate_dockerfile(requirements):
     """Generate a Dockerfile for the given requirements and local main.py."""
     dockerfile = f"""FROM python:3.13-slim
@@ -54,10 +55,13 @@ CMD ["python3", "/main.py"]
 """
     return dockerfile
 
+
 def expand_newlines(s):
-    return s.encode('utf-8').decode('unicode_escape')
+    return s.encode("utf-8").decode("unicode_escape")
+
 
 # Flask app code to write to main.py
+
 
 def create_build_function(code, name=None):
     """
@@ -77,7 +81,6 @@ def create_build_function(code, name=None):
     # Initialize Docker client
     dockerclient = docker.from_env()
     dockerclient.images.build(path=".", tag=f"envybase:{name}_runtime")
-    #remove the Dockerfile and main.py
+    # remove the Dockerfile and main.py
     os.remove("Dockerfile")
     os.remove("main_app.py")
-    
