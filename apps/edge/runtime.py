@@ -45,9 +45,20 @@ def random_name():
 
 def generate_dockerfile(requirements):
     """Generate a Dockerfile for the given requirements and local main.py."""
-    dockerfile = f"""FROM python:3.13-slim
+    # Validate requirements to prevent injection
+    if not requirements or not isinstance(requirements, str):
+        requirements = "flask"  # Default to flask if requirements is invalid
+
+    # Sanitize requirements to prevent command injection
+    requirements = requirements.replace('"', '\\"').replace(';', '\\;')
+
+    dockerfile = f"""FROM python:3.11-slim
 
 RUN pip install {requirements}
+
+# Create a non-root user
+RUN useradd -m appuser
+USER appuser
 
 COPY main_app.py /main.py
 WORKDIR /
