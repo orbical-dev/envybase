@@ -48,7 +48,7 @@ def generate_dockerfile(requirements):
 
 RUN pip install {requirements}
 
-COPY main.py /main.py
+COPY main_app.py /main.py
 WORKDIR /
 CMD ["python3", "/main.py"]
 """
@@ -68,7 +68,7 @@ def create_build_function(code, name=None):
     if name is None:
         name = random_name()
     # Write the main.py file
-    with open("main.py", "w") as code_file:
+    with open("main_app.py", "w") as code_file:
         code_file.write(code)
     # Write the Dockerfile
     dockerfile = generate_dockerfile("flask")
@@ -79,16 +79,5 @@ def create_build_function(code, name=None):
     dockerclient.images.build(path=".", tag=f"envybase:{name}_runtime")
     #remove the Dockerfile and main.py
     os.remove("Dockerfile")
-    os.remove("main.py")
+    os.remove("main_app.py")
     
-codetocreate = """
-from flask import Flask
-app = Flask(__name__)
-@app.route('/')
-def hello():
-    return "Hello, World!"
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-"""
-
-create_build_function(codetocreate)

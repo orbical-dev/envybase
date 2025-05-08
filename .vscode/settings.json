@@ -12,6 +12,7 @@
         "pydantic",
         "pymongo",
         "PYPI",
+        "pytz",
         "refactorer",
         "scripter",
         "testpypi",
