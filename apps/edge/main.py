@@ -1,11 +1,15 @@
 from fastapi import FastAPI
 import uvicorn
 from config import EDGE_PORT
-from database import edge_db
+from database import edge_db, logs
 from models import EdgeFunction
 import datetime
 from decorator import loggers_route
 from runtime import create_build_function
+import pytz
+import random
+
+utc_now = datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
 
 app = FastAPI(
     title="Envybase Edge function Service",
@@ -43,14 +47,38 @@ def create_edge_function(data: EdgeFunction):
             create_build_function(data.code, data.name)
             return {"status": "success", "message": "Function created successfully"}
         except Exception as build_error:
+            error_id = random.randint(100000, 9999999999999)
+            print(f"Build error: {build_error}")
+            logs.insert_one(
+                {
+                    "name": data.name,
+                    "error": str(build_error),
+                    "created_at": utc_now,
+                    "status": "error",
+                    "error_id": error_id,
+                    "type": "build_error"
+                }
+            )
             return {
-                "status": "error",
-                "message": f"Function saved but build failed: {str(build_error)}",
+                "message": "Function saved but the build process failed. Please contact support and use the error ID below.",
+                "error_id": error_id,
             }
     except Exception as db_error:
+        error_id = random.randint(100000, 9999999999999)
+        print(f"Database error: {db_error}")
+        logs.insert_one(
+            {
+                "name": data.name,
+                "error": str(db_error),
+                "created_at": utc_now,
+                "status": "error",
+                "error_id": error_id,
+                "type": "db_error"
+            }
+        )
         return {
-            "status": "error",
-            "message": f"Failed to create function: {str(db_error)}",
+            "message": "Function failed to create. Please contact support and use the error ID below.",
+            "error_id": error_id,
         }
 
 
