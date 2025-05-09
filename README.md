@@ -2,7 +2,7 @@
 
 <br>
 
-# STATUS: DO NOT USE AT ALL
+> **⚠️ STATUS:** Do not use at all
 
 [![Linting](https://github.com/orbical-dev/envybase/actions/workflows/lint.yml/badge.svg)](https://github.com/orbical-dev/envybase/actions/workflows/lint.yml)
 [![Docker Build](https://github.com/orbical-dev/envybase/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/orbical-dev/envybase/actions/workflows/docker-publish.yml)
