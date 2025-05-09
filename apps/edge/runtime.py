@@ -50,7 +50,7 @@ def generate_dockerfile(requirements):
         requirements = "flask"  # Default to flask if requirements is invalid
 
     # Sanitize requirements to prevent command injection
-    requirements = requirements.replace('"', '\\"').replace(';', '\\;')
+    requirements = requirements.replace('"', '\\"').replace(";", "\\;")
 
     dockerfile = f"""FROM python:3.11-slim
 

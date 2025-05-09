@@ -39,10 +39,19 @@ def create_edge_function(data: EdgeFunction):
     }
     try:
         edge_db.insert_one(db_insert)
-        create_build_function(data.code, data.name)
-        return {"status": "success", "message": "Function created successfully"}
-    except Exception:
-        return {"status": "error", "message": "Fail to create function."}
+        try:
+            create_build_function(data.code, data.name)
+            return {"status": "success", "message": "Function created successfully"}
+        except Exception as build_error:
+            return {
+                "status": "error",
+                "message": f"Function saved but build failed: {str(build_error)}",
+            }
+    except Exception as db_error:
+        return {
+            "status": "error",
+            "message": f"Failed to create function: {str(db_error)}",
+        }
 
 
 if __name__ == "__main__":
