@@ -22,3 +22,4 @@ if not os.getenv("EDGE_PORT"):
     )
 MONGO_URI = os.getenv("MONGO_URI")
 EDGE_PORT = os.getenv("EDGE_PORT")
+ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)

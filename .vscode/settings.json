@@ -1,14 +1,21 @@
 {
     "cSpell.words": [
         "authlib",
+        "codetocreate",
+        "dockerclient",
         "dotenv",
         "envybase",
         "envypy",
         "fastapi",
+        "ISCLOUDFLARE",
         "LICEN",
         "pydantic",
         "pymongo",
         "PYPI",
+        "pytz",
+        "refactorer",
+        "scripter",
+        "testpypi",
         "uvicorn"
     ]
 }
