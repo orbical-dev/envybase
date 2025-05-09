@@ -2,6 +2,8 @@
 
 <br>
 
+# STATUS: DO NOT USE AT ALL
+
 [![Linting](https://github.com/orbical-dev/envybase/actions/workflows/lint.yml/badge.svg)](https://github.com/orbical-dev/envybase/actions/workflows/lint.yml)
 [![Docker Build](https://github.com/orbical-dev/envybase/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/orbical-dev/envybase/actions/workflows/docker-publish.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -71,6 +73,8 @@ Envybase is an open-source Backend-as-a-Service (BaaS) platform written in Pytho
 
 *   [Git](https://git-scm.com/)
 *   [Python](https://www.python.org/downloads/) (3.9+ recommended, check individual app `requirements.txt`)
+*   [Python Virtual Environment](https://docs.python.org/3/library/venv.html)
+*   [A distro of Linux](https://www.linux.org/) (or WSL Ubuntu on Windows)
 *   [Docker](https://www.docker.com/get-started)
 *   [Docker Compose](https://docs.docker.com/compose/install/)
 
@@ -124,13 +128,12 @@ EDGE_PORT=8006 # Or your desired port
 ```
 
 ### Running the Services
+#### On Linux/WSL
 
-1.  **Start Dependencies (MongoDB & Redis):**
-    Use Docker Compose to start the required database and caching services.
+1.  **Setup Dependencies (MongoDB & Redis):**
+    Use MongoDB and Redis to start the required database and caching services.
 
-    ```bash
-    docker-compose up -d
-    ```
+    Setup MongoDB and Redis for Linux, making sure that they are allowed to run on 0.0.0.0(AKA All IPs)
 
 2.  **Set up Python Virtual Environments & Install Dependencies for Each App:**
 
