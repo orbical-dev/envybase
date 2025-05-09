@@ -29,6 +29,7 @@ oauth.register(
 
 # TODO: Properly implement OAuth2
 
+
 @app.get("/oauth2/login/{provider}")
 @loggers_route()
 async def login_with_oauth2(request, provider: str):
