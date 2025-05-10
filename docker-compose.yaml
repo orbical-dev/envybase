@@ -1,5 +1,6 @@
 services:
   edge:
+    image: envybase:edge
     build: apps/edge
     ports:
       - "3123:3123"
@@ -8,6 +9,7 @@ services:
       - ISCLOUDFLARE=FALSE
       - EDGE_PORT=3123
   auth:
+    image: envybase:auth
     build: apps/auth
     ports:
       - "3121:3121"
