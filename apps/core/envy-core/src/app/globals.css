@@ -14,7 +14,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
+      --background: #0a0a0a;
     --foreground: #ededed;
   }
 }
@@ -27,4 +27,31 @@ body {
 
 .button {
   margin: 10px;
+}
+
+.geist-300 {
+  font-family: var(--font-sans), serif;
+  font-weight: 300;
+}
+
+.navbar-buttons li {
+  margin-left: 5px;
+  margin-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border : 1px solid #2c2c2c;
+  margin: 15px;
+  box-shadow: 0 0 10px 2px #2c2c2c
+}
+
+.card {
+  box-shadow: 0 0 10px 2px #2c2c2c;
+  border : 1px solid #2c2c2c;
+  padding: 10px;
 }

@@ -2,7 +2,7 @@ function generateStaticParams() {}
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Test | Envybase Frontend',
+    title: 'Dashboard | Envybase Frontend',
 };
 
 export default function Page() {

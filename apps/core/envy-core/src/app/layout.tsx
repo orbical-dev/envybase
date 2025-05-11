@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import React from "react";
+import CookieChecker from "@/components/LoginHelperClient";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,8 +32,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white`}
       >
+      <nav className="navbar-buttons p-4 navbar rounded-2xl dark:text-white list-none"><li> <a href="/dashboard">Dashboard</a></li><li>Services</li> <div className="float-start"></div> </nav>
         {children}
       </body>
     </html>
