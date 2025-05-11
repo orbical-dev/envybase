@@ -4,7 +4,7 @@ from config import EDGE_PORT
 from database import edge_db, logs
 from models import EdgeFunction
 import datetime
-from decorator import loggers_route
+from decorator import loggers_route # type: ignore
 from runtime import create_build_function
 import pytz
 import random
@@ -39,7 +39,7 @@ def create_edge_function(data: EdgeFunction):
     db_insert = {
         "name": data.name,
         "code": data.code,
-        "created_at": datetime.datetime.now(),
+        "created_at": utc_now,
     }
     try:
         edge_db.insert_one(db_insert)
@@ -56,7 +56,7 @@ def create_edge_function(data: EdgeFunction):
                     "created_at": utc_now,
                     "status": "error",
                     "error_id": error_id,
-                    "type": "build_error"
+                    "type": "build_error",
                 }
             )
             return {
@@ -73,7 +73,7 @@ def create_edge_function(data: EdgeFunction):
                 "created_at": utc_now,
                 "status": "error",
                 "error_id": error_id,
-                "type": "db_error"
+                "type": "db_error",
             }
         )
         return {
@@ -83,6 +83,6 @@ def create_edge_function(data: EdgeFunction):
 
 
 if __name__ == "__main__":
-    print("Starting Envybase Authentication Service...")
+    print("Starting Envybase edge function Service...")
     uvicorn.run(app, host="0.0.0.0", port=int(EDGE_PORT))
-    print("Stopping Envybase Authentication Service...")
+    print("Stopping Envybase edge function Service...")
