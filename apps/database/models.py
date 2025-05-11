@@ -21,3 +21,23 @@ class Query(BaseModel):
         0,
         description="The maximum number of documents to return. Default is 0 (No limit).",
     )
+    
+class Update(BaseModel):
+    """Update model for updating documents."""
+
+    query: Dict[str, Any] = Field(
+        {},
+        description="The query to filter documents."
+    )
+    update: Dict[str, Any] = Field(
+        {},
+        description="The update to apply to the documents."
+    )
+    
+class Delete(BaseModel):
+    """Query model for querying documents."""
+
+    query: Dict[str, Any] = Field(
+        {},
+        description="The query to filter documents."
+    )

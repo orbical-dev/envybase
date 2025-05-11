@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 import uvicorn
 from config import DATABASE_PORT
 from database import database_db, logs
-from models import Document, Query
+from models import Document, Query, Update, Delete
 import pytz
 import datetime
 import random
@@ -83,6 +83,78 @@ def select(data: Query):
         )
         # Use HTTPException for consistency in error responses
         raise HTTPException(status_code=500, detail=f"Error during database selection: {str(e)}")
+@app.post("/delete", summary="Delete a document from the database")
+@loggers_route()
+def delete(data: Delete):
+    """
+    Deletes a document from the database.
+    """
+    query = data.query
+    try:
+        # Perform the update operation
+        # Assumes database_db has an update_many method similar to PyMongo
+        result = database_db.delete_one(query)
+
+        # Return a success response with counts of matched and modified documents
+        return {
+            "status": "success"
+        }
+    except Exception as e:
+        error_id = random.randint(100000, 9999999999999)
+        # Safely access data.name for logging
+        log_name = data.name if hasattr(data, 'name') and data.name is not None else "N/A"
+        print(f"Update error: {e}")
+        logs.insert_one(
+            {
+                "name": log_name,
+                "query_attempted": query,
+                "error": str(e),
+                "created_at": utc_now, # Use dynamic timestamp function
+                "status": "error",
+                "error_id": error_id,
+                "type": "delete_error", # Changed from select_error to update_error
+            }
+        )
+        # Use HTTPException for consistency in error responses
+        raise HTTPException(status_code=500, detail=f"Error during database deletion: {str(e)}")
+@app.post("/update", summary="Update a document from the database")
+@loggers_route()
+def update(data: Update):
+    """
+    Update a document from the database.
+    """
+    query = data.query
+    update_payload = data.update  # Assuming data.update is the MongoDB update document
+    try:
+        # Perform the update operation
+        # Assumes database_db has an update_many method similar to PyMongo
+        result = database_db.update_one(query, update_payload)
+
+        # Return a success response with counts of matched and modified documents
+        return {
+            "status": "success",
+            "matched_count": result.matched_count,
+            "modified_count": result.modified_count,
+        }
+    except Exception as e:
+        error_id = random.randint(100000, 9999999999999)
+        # Safely access data.name for logging
+        log_name = data.name if hasattr(data, 'name') and data.name is not None else "N/A"
+        print(f"Update error: {e}")
+        logs.insert_one(
+            {
+                "name": log_name,
+                "query_attempted": query,
+                "update_payload_attempted": update_payload, # Log the update payload
+                "error": str(e),
+                "created_at": utc_now, # Use dynamic timestamp function
+                "status": "error",
+                "error_id": error_id,
+                "type": "update_error", # Changed from select_error to update_error
+            }
+        )
+        # Use HTTPException for consistency in error responses
+        raise HTTPException(status_code=500, detail=f"Error during database update: {str(e)}")
 
 
 if __name__ == "__main__":
