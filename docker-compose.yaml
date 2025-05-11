@@ -1,13 +1,4 @@
 services:
-  edge:
-    image: envybase:edge
-    build: apps/edge
-    ports:
-      - "3123:3123"
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - ISCLOUDFLARE=FALSE
-      - EDGE_PORT=3123
   auth:
     image: envybase:auth
     build: apps/auth
@@ -26,6 +17,24 @@ services:
       - AUTH_KEY=your_auth_key
       - ISSECURE=False
       - ISCLOUDFLARE=False
+  database:
+    image: envybase:database
+    build: apps/database
+    ports:
+      - "3122:3122"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - DATABASE_PORT=3122
+  edge:
+    image: envybase:edge
+    build: apps/edge
+    ports:
+      - "3123:3123"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=FALSE
+      - EDGE_PORT=3123  
+
   mongodb:
     image: mongo:latest
     ports:

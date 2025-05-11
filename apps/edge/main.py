@@ -4,7 +4,7 @@ from config import EDGE_PORT
 from database import edge_db, logs
 from models import EdgeFunction
 import datetime
-from decorator import loggers_route # type: ignore
+from decorator import loggers_route  # type: ignore
 from runtime import create_build_function
 import pytz
 import random
