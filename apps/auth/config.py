@@ -93,3 +93,4 @@ if not os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"):
         "\033[33m[WARN]\033[0m ACCESS_TOKEN_EXPIRE_MINUTES not set, using default value of 60"
     )
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60)
+DOCKER = os.getenv("DOCKER", False)
