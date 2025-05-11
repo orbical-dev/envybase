@@ -8,6 +8,7 @@
         "envypy",
         "fastapi",
         "ISCLOUDFLARE",
+        "ISSECURE",
         "LICEN",
         "pydantic",
         "pymongo",
