@@ -47,8 +47,8 @@ if not os.getenv("USERNAME_MAX_LENGTH"):
     )
 
 if not os.getenv("AUTH_PORT"):
-    print("\033[33m[WARN]\033[0m AUTH_PORT not set, using default value of 8005")
-AUTH_PORT = os.getenv("AUTH_PORT", 8005)
+    print("\033[33m[WARN]\033[0m AUTH_PORT not set, using default value of 3121")
+AUTH_PORT = int(os.getenv("AUTH_PORT", 3121))
 
 if not os.getenv("ISSUER"):
     raise ValueError(

@@ -1,4 +1,31 @@
 services:
+  edge:
+    image: envybase:edge
+    build: apps/edge
+    ports:
+      - "3123:3123"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=FALSE
+      - EDGE_PORT=3123
+  auth:
+    image: envybase:auth
+    build: apps/auth
+    ports:
+      - "3121:3121"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PASSWORD_MIN_LENGTH=8
+      - PASSWORD_MAX_LENGTH=32
+      - USERNAME_MIN_LENGTH=3
+      - USERNAME_MAX_LENGTH=32
+      - AUTH_PORT=3121
+      - ISSUER=your_issuer
+      - AUTH_KEY=your_auth_key
+      - ISSECURE=False
+      - ISCLOUDFLARE=False
   mongodb:
     image: mongo:latest
     ports:
