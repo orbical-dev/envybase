@@ -15,3 +15,6 @@
 |   `400`    | Check response(Error on client side) |
 |  `300x2`   |   Failed to OAuth2 decode id_token   |
 |  `300x3`   |   Failed to OAuth2 fetch user info   |
+|  `300x4`   |    Email not provided by provider    |
+|  `300x5`   |       Email already registered       |
+|  `300x6`   |     Incorrect email or password      |

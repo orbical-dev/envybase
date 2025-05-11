@@ -44,7 +44,10 @@ def login(request: Request, response: Response, data: models.LoginData):
     """
     user = users.find_one({"email": data.email})
     if not user or not verify_password(data.password, user["password"]):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--"
+        )
     token = create_jwt_token(
         {
             "sub": user["sub"],
@@ -68,7 +71,10 @@ def register(request: Request, data: models.RegisterData):
     Returns a success message if registration is successful, otherwise an error message.
     """
     if users.find_one({"email": data.email}):
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--"
+        )
     hashed_password = hash_password(data.password)
     user_data = {
         "email": data.email,

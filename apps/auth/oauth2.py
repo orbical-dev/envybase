@@ -60,7 +60,10 @@ async def login_with_oauth2(request: Request, provider: str):
     # elif provider == "microsoft":
     #     return await oauth.microsoft.authorize_redirect(request, redirect_uri)
     else:
-        raise HTTPException(status_code=400, detail='Unsupported provider --ENVYSTART--ERROR:300x1--ENVYEND--')
+        raise HTTPException(
+            status_code=400,
+            detail='Unsupported provider --ENVYSTART--ERROR:300x1--ENVYEND--'
+        )
 
 @oauth2_router.get("/oauth2/callback/{provider}")
 #@loggers_route()
@@ -162,11 +165,23 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Failed to fetch user info: {str(e)}--ENVYSTART--ERROR:300x3;ERROR_ID:{error_id}--ENVYEND--",
             )
-        # TODO: Continue adding error handling
         email = user_info.get("email")
         if not email:
+            error_id = random.randint(100000, 9999999999999)
+            print("Email not provided by OAuth provider")
+            logs.insert_one(
+                {
+                    "error": "Email not provided by OAuth provider",
+                    "created_at": utc_now,
+                    "status": "error",
+                    "error_id": error_id,
+                    "envy_error": "300x4",
+                    "type": "MissingEmailError",
+                }
+            )
             raise HTTPException(
-                status_code=400, detail="Email not provided by OAuth provider"
+                status_code=400,
+                detail=f"Email not provided by OAuth provider --ENVYSTART--ERROR:300x4;ERROR_ID:{error_id}--ENVYEND--"
             )
         username = user_info.get("name", email)
         name = user_info.get("name", "")
