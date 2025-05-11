@@ -1,21 +1,38 @@
-from authlib.integrations.starlette_client import OAuth
-from main import app, HTTPException
-
-from config import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+from authlib.integrations.starlette_client import OAuth, OAuthError
+from fastapi import APIRouter, HTTPException, Request, status, Response
+import config
 from decorator import loggers_route
+import configparser
+import jwt
+import requests
+from jwt import PyJWKClient
+from database import users, logs
+from utils import create_jwt_token, generate_username
+import datetime
+import pytz
+import random
+
+# Config Parser reads the .ini file for the user's
+ini = configparser.ConfigParser()
+
+allowed_providers = config.SOCIAL_LOGINS
+
+oauth2_router = APIRouter()
+
+utc_now = datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
 
 oauth = OAuth()
-
-oauth.register(
-    name="google",
-    client_id=GOOGLE_CLIENT_ID,
-    client_secret=GOOGLE_CLIENT_SECRET,
-    authorize_url="https://accounts.google.com/o/oauth2/auth",
-    access_token_url="https://oauth2.googleapis.com/token",
-    userinfo_endpoint="https://www.googleapis.com/oauth2/v2/userinfo",
-    client_kwargs={"scope": "openid email profile"},
-    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-)
+if "google" in allowed_providers:
+    oauth.register(
+        name="google",
+        client_id=config.GOOGLE_CLIENT_ID,
+        client_secret=config.GOOGLE_CLIENT_SECRET,
+        authorize_url="https://accounts.google.com/o/oauth2/auth",
+        access_token_url="https://oauth2.googleapis.com/token",
+        userinfo_endpoint="https://www.googleapis.com/oauth2/v2/userinfo",
+        client_kwargs={"scope": "openid email profile"},
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    )
 
 # oauth.register( # Coming soon!!!!
 #    name="microsoft",
@@ -29,17 +46,178 @@ oauth.register(
 
 # TODO: Properly implement OAuth2
 
-
-@app.get("/oauth2/login/{provider}")
-@loggers_route()
-async def login_with_oauth2(request, provider: str):
+@oauth2_router.get("/oauth2/login/{provider}")
+#@loggers_route()
+async def login_with_oauth2(request: Request, provider: str):
     """
     Redirects the user to the OAuth2 provider's login page.
     """
-    redirect_uri = request.url_for("auth_callback", provider=provider)
-    if provider == "google":
-        return await oauth.google.authorize_redirect(request, redirect_uri)
+    redirect_uri = f"http://127.0.0.1:8005/oauth2/callback/{provider}" #request.url_for(oauth2_callback, provider=provider)
+    if provider == "google" and "google" in allowed_providers:
+        return await oauth.create_client("google").authorize_redirect(
+            request, redirect_uri
+        )
     # elif provider == "microsoft":
     #     return await oauth.microsoft.authorize_redirect(request, redirect_uri)
     else:
+        raise HTTPException(
+            status_code=400,
+            detail='Unsupported provider --ENVYSTART--ERROR:300x1--ENVYEND--'
+        )
+
+@oauth2_router.get("/oauth2/callback/{provider}")
+#@loggers_route()
+async def oauth2_callback(request: Request, provider: str, response: Response):
+    """
+    Handles the callback from the OAuth2 provider after user authentication.
+    """
+
+    if provider == "google" and "google" in allowed_providers:
+        client = oauth.create_client("google")
+        try:
+            token = await client.authorize_access_token(request)
+            if not token:
+                raise HTTPException(status_code=400, detail="No token received")
+        except OAuthError as oauth_err:
+            error_id = random.randint(100000, 9999999999999)
+            print(f"OAuth2 Error: {oauth_err}")
+            logs.insert_one(
+                {
+                    "error": str(oauth_err),
+                    "created_at": utc_now,
+                    "status": "error",
+                    "error_id": error_id,
+                    "envy_error": "400",
+                    "type": "oauth_error",
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"OAuth error: {oauth_err.error}--ENVYSTART--ERROR:400;ERROR_ID:{error_id}--ENVYEND--",
+            )
+        except Exception as e:
+            error_id = random.randint(100000, 9999999999999)
+            print(f"Exception: {str(e)}")
+            logs.insert_one(
+                {
+                    "error": str(e),
+                    "created_at": utc_now,
+                    "status": "error",
+                    "error_id": error_id,
+                    "envy_error": "400",
+                    "type": "exception",
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to obtain access token: {str(e)}--ENVYSTART--ERROR:400;ERROR_ID:{error_id}--ENVYEND--",
+            )
+
+        try:
+            id_token = token.get("id_token")
+            if id_token:
+                try:
+                    # Fetch Google's public keys
+                    jwks_url = "https://www.googleapis.com/oauth2/v3/certs"
+                    jwk_client = PyJWKClient(jwks_url)
+                    signing_key = jwk_client.get_signing_key_from_jwt(id_token)
+
+                    # Decode the id_token using the public key
+                    user_info = jwt.decode(
+                        id_token,
+                        signing_key.key,
+                        algorithms=["RS256"],
+                        audience=config.GOOGLE_CLIENT_ID,
+                    )
+                except jwt.PyJWTError as e:
+                    error_id = random.randint(100000, 9999999999999)
+                    print(f"Failed to decode id_token: {str(e)}")
+                    logs.insert_one(
+                        {
+                            "error": str(e),
+                            "created_at": utc_now,
+                            "status": "error",
+                            "error_id": error_id,
+                            "envy_error": "300x2",
+                            "type": "PyJWTError",
+                        }
+                    )
+                    raise HTTPException(
+                        status_code=400, detail=f"Failed to decode id_token: {str(e)}--ENVYSTART--ERROR:300x2;ERROR_ID:{error_id}--ENVYEND--"
+                    )
+            else:
+                resp = await client.get("userinfo")
+                user_info = resp.json()
+        except Exception as e:
+            error_id = random.randint(100000, 9999999999999)
+            print(f"Failed to fetch user info: {str(e)}")
+            logs.insert_one(
+                {
+                    "error": str(e),
+                    "created_at": utc_now,
+                    "status": "error",
+                    "error_id": error_id,
+                    "envy_error": "300x3",
+                    "type": "UserinfoFetchError",
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Failed to fetch user info: {str(e)}--ENVYSTART--ERROR:300x3;ERROR_ID:{error_id}--ENVYEND--",
+            )
+        email = user_info.get("email")
+        if not email:
+            error_id = random.randint(100000, 9999999999999)
+            print("Email not provided by OAuth provider")
+            logs.insert_one(
+                {
+                    "error": "Email not provided by OAuth provider",
+                    "created_at": utc_now,
+                    "status": "error",
+                    "error_id": error_id,
+                    "envy_error": "300x4",
+                    "type": "MissingEmailError",
+                }
+            )
+            raise HTTPException(
+                status_code=400,
+                detail=f"Email not provided by OAuth provider --ENVYSTART--ERROR:300x4;ERROR_ID:{error_id}--ENVYEND--"
+            )
+        username = user_info.get("name", email)
+        name = user_info.get("name", "")
+        given_name = user_info.get("given_name", "")
+        family_name = user_info.get("family_name", "")
+        picture = user_info.get("picture")
+    # elif provider == "microsoft":
+    #     token = await oauth.microsoft.authorize_access_token(request)
+    #     user = await oauth.microsoft.parse_id_token(request, token)
+    #     return {"status": "success", "user": user}
+    else:
         raise HTTPException(status_code=400, detail="Unsupported provider")
+    user = users.find_one({"email": email})
+    if not user:
+        user_data = {
+            "email": email,
+            "name": name,
+            "username": generate_username(),
+            "sub": email,
+            "picture": picture,
+        }
+        users.insert_one(user_data)
+        access_token = create_jwt_token({"sub": user_data["sub"]})
+        return {
+            "status": "success",
+            "message": f"User registered successfully with {provider.upper()}",
+            "access_token": access_token,
+            "type": "Bearer",
+            "ACCESS_TOKEN_EXPIRE_MINUTES": config.ACCESS_TOKEN_EXPIRE_MINUTES,
+        }
+
+    access_token = create_jwt_token({"sub": user["sub"]})
+    return {
+        "status": "success",
+        "message": f"User logged in successfully with {provider.upper()}",
+        "access_token": access_token,
+        "type": "Bearer",
+        "ACCESS_TOKEN_EXPIRE_MINUTES": config.ACCESS_TOKEN_EXPIRE_MINUTES,
+    }
