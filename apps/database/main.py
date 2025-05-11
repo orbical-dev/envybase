@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 import uvicorn
-from config import DATABASE_PORT
+from config import DATABASE_PORT, host
 from database import database_db, logs
 from models import Document, Query, Update, Delete
 import pytz
@@ -179,5 +179,5 @@ def update(data: Update):
 
 if __name__ == "__main__":
     print("Starting Envybase Database Service...")
-    uvicorn.run(app, host="0.0.0.0", port=int(DATABASE_PORT))
+    uvicorn.run(app, host=host, port=int(DATABASE_PORT))
     print("Stopping Envybase Database Service...")

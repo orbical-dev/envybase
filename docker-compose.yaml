@@ -1,10 +1,35 @@
 services:
-  auth:
-    image: envybase:auth
-    build: apps/auth
-    ports:
-      - "3121:3121"
+  edge:
+    networks:
+      - envy
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-edge:stable
+    build: apps/edge
     environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=False
+      - DOCKER=True
+  database:
+    networks:
+      - envy
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-database:stable
+    build: apps/database
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=False
+      - DOCKER=True
+  auth:
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-auth:stable
+    build: apps/auth
+    networks:
+      - envy
+    environment:
+      - DOCKER=True
       - MONGO_URI=mongodb://mongodb:27017
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -12,34 +37,24 @@ services:
       - PASSWORD_MAX_LENGTH=32
       - USERNAME_MIN_LENGTH=3
       - USERNAME_MAX_LENGTH=32
-      - AUTH_PORT=3121
       - ISSUER=your_issuer
       - AUTH_KEY=your_auth_key
       - ISSECURE=False
       - ISCLOUDFLARE=False
-  database:
-    image: envybase:database
-    build: apps/database
+  core:
+    networks:
+      - envy
+    image: ghcr.io/orbical-dev/envybase-core:stable
+    build: apps/core
     ports:
-      - "3122:3122"
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - DATABASE_PORT=3122
-  edge:
-    image: envybase:edge
-    build: apps/edge
-    ports:
-      - "3123:3123"
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - ISCLOUDFLARE=FALSE
-      - EDGE_PORT=3123  
-
+      - "3120:80"
   mongodb:
+    networks:
+      - envy
     image: mongo:latest
-    ports:
-      - "27017:27017"
   redis:
+    networks:
+      - envy
     image: redis:latest
-    ports:
-      - "6379:6379"
+networks:
+  envy:

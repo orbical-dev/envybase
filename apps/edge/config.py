@@ -23,3 +23,8 @@ if not os.getenv("EDGE_PORT"):
 MONGO_URI = os.getenv("MONGO_URI")
 EDGE_PORT = os.getenv("EDGE_PORT")
 ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)
+DOCKER = os.getenv("DOCKER", False)
+if DOCKER == "True":
+    host = "127.0.0.1"  # Internal only because it's going to be in a Docker network
+else:
+    host = "0.0.0.0"

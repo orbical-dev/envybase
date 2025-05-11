@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 import uvicorn
-from config import EDGE_PORT
+from config import EDGE_PORT, host
 from database import edge_db, logs
 from models import EdgeFunction
 import datetime
@@ -84,5 +84,5 @@ def create_edge_function(data: EdgeFunction):
 
 if __name__ == "__main__":
     print("Starting Envybase edge function Service...")
-    uvicorn.run(app, host="0.0.0.0", port=int(EDGE_PORT))
+    uvicorn.run(app, host=host, port=int(EDGE_PORT))
     print("Stopping Envybase edge function Service...")
