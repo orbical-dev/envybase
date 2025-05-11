@@ -1,17 +1,23 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
-from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE
+from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE, AUTH_KEY
 from database import users
 from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
-
+from oauth2 import oauth2_router
+from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI(
     title="Envybase Authentication Service",
     description="Authentication microservice for Envybase",
     version="0",
 )
+
+app.add_middleware(SessionMiddleware, secret_key=AUTH_KEY)
+
+# Include the routes from oauth2.py
+app.include_router(oauth2_router, tags=["oauth2"])
 
 
 @app.get("/", summary="Health check")
@@ -79,3 +85,4 @@ if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")
     uvicorn.run(app, host="0.0.0.0", port=int(AUTH_PORT))
     print("Stopping Envybase Authentication Service...")
+

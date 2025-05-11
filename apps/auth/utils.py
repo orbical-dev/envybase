@@ -3,6 +3,8 @@ from typing import Dict
 from datetime import datetime, timezone
 import jwt
 from config import ISSUER, AUTH_KEY
+import string
+import secrets
 
 ALGORITHM = "HS256"
 
@@ -37,3 +39,7 @@ def decode_jwt_token(token: str) -> Dict:
         )  # This shouldn't happen, the JWT creator doesn't set an expiration time
     except jwt.InvalidTokenError as e:
         raise ValueError(f"Invalid token: {str(e)}")
+
+def generate_username():
+    characters = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(characters) for _ in range(12))
