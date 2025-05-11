@@ -49,7 +49,9 @@ def insert(data: Document):
                 "type": "insert_error",
             }
         )
-        return {"status": "error", "message": str(e)}
+        raise HTTPException(
+            status_code=500, detail=f"Error during database insertion: {str(e)}"
+        )
 
 
 @app.post("/select", summary="Select a document from the database")
