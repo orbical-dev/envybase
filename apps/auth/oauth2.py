@@ -1,7 +1,7 @@
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import APIRouter, HTTPException, Request, status, Response
 import config
-from decorator import loggers_route
+from decorator import api_loggers_route
 import configparser
 import jwt
 import requests
@@ -19,7 +19,7 @@ allowed_providers = config.SOCIAL_LOGINS
 
 oauth2_router = APIRouter()
 
-utc_now = datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+utc_now = datetime.datetime.now(pytz.UTC)#.isoformat(timespec='milliseconds')
 
 oauth = OAuth()
 if "google" in allowed_providers:
@@ -44,15 +44,15 @@ if "google" in allowed_providers:
 #    client_kwargs={"scope": "openid email profile"},
 #    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
 
-# TODO: Properly implement OAuth2
+# TODO: Add more providers
 
 @oauth2_router.get("/oauth2/login/{provider}")
-#@loggers_route()
-async def login_with_oauth2(request: Request, provider: str):
+@api_loggers_route()
+async def login_with_oauth2(request: Request, provider: str, response: Response):
     """
     Redirects the user to the OAuth2 provider's login page.
     """
-    redirect_uri = f"http://127.0.0.1:8005/oauth2/callback/{provider}" #request.url_for(oauth2_callback, provider=provider)
+    redirect_uri = f"http://127.0.0.1:3121/oauth2/callback/{provider}" #request.url_for(oauth2_callback, provider=provider)
     if provider == "google" and "google" in allowed_providers:
         return await oauth.create_client("google").authorize_redirect(
             request, redirect_uri
@@ -66,7 +66,7 @@ async def login_with_oauth2(request: Request, provider: str):
         )
 
 @oauth2_router.get("/oauth2/callback/{provider}")
-#@loggers_route()
+@api_loggers_route()
 async def oauth2_callback(request: Request, provider: str, response: Response):
     """
     Handles the callback from the OAuth2 provider after user authentication.
