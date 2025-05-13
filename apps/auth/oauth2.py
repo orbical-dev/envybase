@@ -89,6 +89,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                     "error_id": error_id,
                     "envy_error": "400",
                     "type": "oauth_error",
+                    "status_code": 400,
                 }
             )
             raise HTTPException(
@@ -106,6 +107,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                     "error_id": error_id,
                     "envy_error": "400",
                     "type": "exception",
+                    "status_code": 400,
                 }
             )
             raise HTTPException(
@@ -140,6 +142,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                             "error_id": error_id,
                             "envy_error": "300x2",
                             "type": "PyJWTError",
+                            "status_code": 400,
                         }
                     )
                     raise HTTPException(
@@ -159,6 +162,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                     "error_id": error_id,
                     "envy_error": "300x3",
                     "type": "UserinfoFetchError",
+                    "status_code": 400,
                 }
             )
             raise HTTPException(
@@ -177,6 +181,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                     "error_id": error_id,
                     "envy_error": "300x4",
                     "type": "MissingEmailError",
+                    "status_code": 400,
                 }
             )
             raise HTTPException(
