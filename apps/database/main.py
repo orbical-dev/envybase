@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket
 import uvicorn
 from config import DATABASE_PORT, host
 from database import database_db, logs
