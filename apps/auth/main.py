@@ -88,10 +88,7 @@ def register(request: Request, response: Response, data: models.RegisterData):
     users.insert_one(user_data)
     return {"status": "success", "message": "User registered successfully"}
 
-if DOCKER == "True":
-    host = "127.0.0.1" # Internal only because it's going to be in a Docker network
-else:
-    host = "0.0.0.0"
+host = "0.0.0.0" if DOCKER else "127.0.0.1"
 
 if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")

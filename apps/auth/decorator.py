@@ -7,6 +7,7 @@ import pytz
 import inspect
 from database import logs
 from config import ISCLOUDFLARE
+import re
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -104,7 +105,8 @@ def loggers_route():
                     f"Error={str(e)} "
                     f"Client={real_ip(request)} "
                 )
-                error_code = int(__import__('re').search(r'(\d+):', str(e)).group(1))
+                match = re.search(r'ERROR:([0-9x]+)', str(e))
+                error_code = match.group(1) if match else "500"
                 print(error_code)
                 logs.update_one(
                     {

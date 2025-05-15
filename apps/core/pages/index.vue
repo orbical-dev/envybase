@@ -4,12 +4,12 @@ import Navbar from "~/components/Navbar.vue";
 </script>
 
 <template>
-  <body class="text-white flex flex-col min-h-screen">
+  <div class="body text-white flex flex-col min-h-screen">
   <NuxtLayout>
     <NuxtPage />
     <Navbar></Navbar>
   </NuxtLayout>
-  </body>
+  </div>
 </template>
 
 <style scoped>

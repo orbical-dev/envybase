@@ -188,7 +188,6 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                 status_code=400,
                 detail=f"Email not provided by OAuth provider --ENVYSTART--ERROR:300x4;ERROR_ID:{error_id}--ENVYEND--"
             )
-        username = user_info.get("name", email)
         name = user_info.get("name", "")
         given_name = user_info.get("given_name", "")
         family_name = user_info.get("family_name", "")
@@ -207,6 +206,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             "username": generate_username(),
             "sub": email,
             "picture": picture,
+            "given_name": given_name,
+            "family_name": family_name,
         }
         users.insert_one(user_data)
         access_token = create_jwt_token({"sub": user_data["sub"]})

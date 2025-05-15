@@ -4,7 +4,7 @@ import Navbar from "~/components/Navbar.vue";
 </script>
 
 <template>
-  <body class="text-white flex flex-col min-h-screen">
+  <div class="text-white flex flex-col min-h-screen">
   <NuxtLayout>
     <NuxtPage />
     <Navbar></Navbar>
@@ -13,7 +13,7 @@ import Navbar from "~/components/Navbar.vue";
     <p class="">Hi</p>
     </div>
   </NuxtLayout>
-  </body>
+  </div>
 </template>
 
 <style scoped>
