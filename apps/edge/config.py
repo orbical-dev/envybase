@@ -16,12 +16,11 @@ if not os.getenv("MONGO_URI"):
         format_error_message("MONGO_URI not set, please set it in the .env file"),
     )
 
-if not os.getenv("EDGE_PORT"):
-    raise ValueError(
-        format_error_message("EDGE_PORT not set, please set it in the .env file"),
-    )
+
 MONGO_URI = os.getenv("MONGO_URI")
-EDGE_PORT = os.getenv("EDGE_PORT")
+if not os.getenv("EDGE_PORT"):
+    print("\033[33m[WARN]\033[0m EDGE_PORT not set, using default value of 3123")
+EDGE_PORT = int(os.getenv("EDGE_PORT", 3123))
 ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)
 DOCKER = os.getenv("DOCKER", False)
 if DOCKER == "True":
