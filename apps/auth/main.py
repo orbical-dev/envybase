@@ -1,7 +1,14 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
-from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE, AUTH_KEY, DOCKER
+from config import (
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    AUTH_PORT,
+    ISSECURE,
+    AUTH_KEY,
+    DOCKER,
+)
 from database import users
 from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
@@ -46,7 +53,7 @@ def login(request: Request, response: Response, data: models.LoginData):
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(
             status_code=400,
-            detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--"
+            detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--",
         )
     token = create_jwt_token(
         {
@@ -73,7 +80,7 @@ def register(request: Request, data: models.RegisterData):
     if users.find_one({"email": data.email}):
         raise HTTPException(
             status_code=400,
-            detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--"
+            detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--",
         )
     hashed_password = hash_password(data.password)
     user_data = {
@@ -86,8 +93,9 @@ def register(request: Request, data: models.RegisterData):
     users.insert_one(user_data)
     return {"status": "success", "message": "User registered successfully"}
 
+
 if DOCKER == "True":
-    host = "127.0.0.1" # Internal only because it's going to be in a Docker network
+    host = "127.0.0.1"  # Internal only because it's going to be in a Docker network
 else:
     host = "0.0.0.0"
 
@@ -95,4 +103,3 @@ if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")
     uvicorn.run(app, host=host, port=int(AUTH_PORT))
     print("Stopping Envybase Authentication Service...")
-

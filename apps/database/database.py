@@ -1,54 +1,61 @@
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure
 from config import MONGO_URI
-import atexit
+import redis.asyncio as redis  # optional: change back to sync redis if not using async
+import asyncio
 
-# Initialize with None so we can check if connection is established
+# Async database references
 client = None
 db = None
 users = None
 database_db = None
 logs = None
+realtime = None
 
 
-def init_db():
-    """Initialize database connection."""
-    global client, db, database_db, logs
-
+async def init_db():
+    """Initialize async MongoDB and Redis connections."""
+    global client, db, database_db, logs, realtime
     try:
-        client = MongoClient(
+        client = AsyncIOMotorClient(
             MONGO_URI,
             maxPoolSize=50,
             connectTimeoutMS=5000,
             serverSelectionTimeoutMS=5000,
             waitQueueTimeoutMS=5000,
         )
-        # Verify connection
-        client.admin.command("ping")
 
-        # Database name defined as a constant until configuration is updated
+        # Verify MongoDB connection
+        await client.admin.command("ping")
+
+        # Setup Redis (optional: use sync redis if you prefer)
+        #realtime = redis.Redis(host="localhost", port=6379, db=0)
+        #if not await realtime.ping():
+          #  raise ConnectionFailure("Redis connection failed")
+
         DB_NAME = "envybase"
         db = client[DB_NAME]
         database_db = db["database"]
         logs = db["logs"]
 
-        # Register cleanup function
-        atexit.register(close_db_connection)
-
         return True
     except ConnectionFailure as e:
         raise Exception(
-            f"Failed to connect to MongoDB: {str(e)}. Please check your connection settings."
+            f"Failed to connect to MongoDB or Redis: {str(e)}"
         ) from e
 
 
-def close_db_connection():
-    """Close database connection."""
-    global client
+async def close_db_connection():
+    """Close async MongoDB and Redis connections."""
+    global client, realtime
     if client:
         client.close()
         client = None
+    if realtime:
+        await realtime.close()
+        realtime = None
 
 
-# Initialize connection on module import
-init_db()
+# To run it on app startup:
+# import this module in your FastAPI app
+# and do: await init_db() inside FastAPI's startup event

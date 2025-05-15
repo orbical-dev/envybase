@@ -1,10 +1,8 @@
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from fastapi import APIRouter, HTTPException, Request, status, Response
 import config
-from decorator import loggers_route
 import configparser
 import jwt
-import requests
 from jwt import PyJWKClient
 from database import users, logs
 from utils import create_jwt_token, generate_username
@@ -46,13 +44,14 @@ if "google" in allowed_providers:
 
 # TODO: Properly implement OAuth2
 
+
 @oauth2_router.get("/oauth2/login/{provider}")
-#@loggers_route()
+# @loggers_route()
 async def login_with_oauth2(request: Request, provider: str):
     """
     Redirects the user to the OAuth2 provider's login page.
     """
-    redirect_uri = f"http://127.0.0.1:8005/oauth2/callback/{provider}" #request.url_for(oauth2_callback, provider=provider)
+    redirect_uri = f"http://127.0.0.1:8005/oauth2/callback/{provider}"  # request.url_for(oauth2_callback, provider=provider)
     if provider == "google" and "google" in allowed_providers:
         return await oauth.create_client("google").authorize_redirect(
             request, redirect_uri
@@ -62,11 +61,12 @@ async def login_with_oauth2(request: Request, provider: str):
     else:
         raise HTTPException(
             status_code=400,
-            detail='Unsupported provider --ENVYSTART--ERROR:300x1--ENVYEND--'
+            detail="Unsupported provider --ENVYSTART--ERROR:300x1--ENVYEND--",
         )
 
+
 @oauth2_router.get("/oauth2/callback/{provider}")
-#@loggers_route()
+# @loggers_route()
 async def oauth2_callback(request: Request, provider: str, response: Response):
     """
     Handles the callback from the OAuth2 provider after user authentication.
@@ -143,7 +143,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                         }
                     )
                     raise HTTPException(
-                        status_code=400, detail=f"Failed to decode id_token: {str(e)}--ENVYSTART--ERROR:300x2;ERROR_ID:{error_id}--ENVYEND--"
+                        status_code=400,
+                        detail=f"Failed to decode id_token: {str(e)}--ENVYSTART--ERROR:300x2;ERROR_ID:{error_id}--ENVYEND--",
                     )
             else:
                 resp = await client.get("userinfo")
@@ -181,7 +182,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             )
             raise HTTPException(
                 status_code=400,
-                detail=f"Email not provided by OAuth provider --ENVYSTART--ERROR:300x4;ERROR_ID:{error_id}--ENVYEND--"
+                detail=f"Email not provided by OAuth provider --ENVYSTART--ERROR:300x4;ERROR_ID:{error_id}--ENVYEND--",
             )
         username = user_info.get("name", email)
         name = user_info.get("name", "")

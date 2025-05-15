@@ -16,12 +16,12 @@ if not os.getenv("MONGO_URI"):
         format_error_message("MONGO_URI not set, please set it in the .env file"),
     )
 
-if not os.getenv("DATABASE_PORT"):
-    raise ValueError(
-        format_error_message("DATABASE_PORT not set, please set it in the .env file"),
-    )
+
 MONGO_URI = os.getenv("MONGO_URI")
-DATABASE_PORT = os.getenv("DATABASE_PORT")
+
+if not os.getenv("DATABASE_PORT"):
+    print("\033[33m[WARN]\033[0m DATABASE_PORT not set, using default value of 3122")
+DATABASE_PORT = int(os.getenv("DATABASE_PORT", 3122))
 ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)
 DOCKER = os.getenv("DOCKER", False)
 if DOCKER == "True":
