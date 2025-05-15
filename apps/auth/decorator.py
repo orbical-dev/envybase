@@ -105,7 +105,7 @@ def loggers_route():
                     f"Error={str(e)} "
                     f"Client={real_ip(request)} "
                 )
-                match = re.search(r'ERROR:([0-9x]+)', str(e))
+                match = re.search(r"ERROR:([0-9x]+)", str(e))
                 error_code = match.group(1) if match else "500"
                 print(error_code)
                 logs.update_one(
@@ -170,7 +170,9 @@ def api_loggers_route():
                 response = await func(*args, **kwargs)
 
                 # Log successful execution
-                status_code = response.status_code if hasattr(response, "status_code") else 200
+                status_code = (
+                    response.status_code if hasattr(response, "status_code") else 200
+                )
                 logger.info(
                     f"[{utc_now}]"
                     f"Response: Method={request.method} "

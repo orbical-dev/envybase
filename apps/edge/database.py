@@ -8,6 +8,7 @@ db = None
 edge_db = None
 logs = None
 
+
 async def init_db():
     """Asynchronously initialize MongoDB connection using Motor."""
     global client, db, edge_db, logs
@@ -33,6 +34,7 @@ async def init_db():
         raise Exception(
             f"Failed to connect to MongoDB: {str(e)}. Please check your connection settings."
         ) from e
+
 
 async def close_db_connection():
     """Close MongoDB connection (Motor cleans up automatically, but we can force close)."""

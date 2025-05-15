@@ -17,7 +17,7 @@ allowed_providers = config.SOCIAL_LOGINS
 
 oauth2_router = APIRouter()
 
-utc_now = datetime.datetime.now(pytz.UTC)#.isoformat(timespec='milliseconds')
+utc_now = datetime.datetime.now(pytz.UTC)  # .isoformat(timespec='milliseconds')
 
 oauth = OAuth()
 if "google" in allowed_providers:
@@ -50,7 +50,7 @@ async def login_with_oauth2(request: Request, provider: str, response: Response)
     """
     Redirects the user to the OAuth2 provider's login page.
     """
-    redirect_uri = f"http://127.0.0.1:3121/oauth2/callback/{provider}" #request.url_for(oauth2_callback, provider=provider)
+    redirect_uri = f"http://127.0.0.1:3121/oauth2/callback/{provider}"  # request.url_for(oauth2_callback, provider=provider)
 
     if provider == "google" and "google" in allowed_providers:
         return await oauth.create_client("google").authorize_redirect(

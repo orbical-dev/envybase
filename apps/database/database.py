@@ -27,9 +27,9 @@ async def init_db():
         await client.admin.command("ping")
 
         # Setup Redis (optional: use sync redis if you prefer)
-        #realtime = redis.Redis(host="localhost", port=6379, db=0)
-        #if not await realtime.ping():
-          #  raise ConnectionFailure("Redis connection failed")
+        # realtime = redis.Redis(host="localhost", port=6379, db=0)
+        # if not await realtime.ping():
+        #  raise ConnectionFailure("Redis connection failed")
 
         DB_NAME = "envybase"
         db = client[DB_NAME]
@@ -38,9 +38,7 @@ async def init_db():
 
         return True
     except ConnectionFailure as e:
-        raise Exception(
-            f"Failed to connect to MongoDB or Redis: {str(e)}"
-        ) from e
+        raise Exception(f"Failed to connect to MongoDB or Redis: {str(e)}") from e
 
 
 async def close_db_connection():

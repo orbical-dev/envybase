@@ -3,6 +3,7 @@ from database import logs
 
 stats_router = APIRouter()
 
+
 @stats_router.get("/stats")
 def get_stats():
     """
@@ -12,13 +13,15 @@ def get_stats():
         total_count = logs.count_documents({"service": "auth"})
         log_entries = []
         for log in logs.find({"service": "auth"}):
-            log_entries.append({
-                "method": log["method"],
-                "path": log["path"],
-                "client": log["client"],
-                "timestamp": log["timestamp"],
-                "status_code": log.get("status_code", None),
-            })
+            log_entries.append(
+                {
+                    "method": log["method"],
+                    "path": log["path"],
+                    "client": log["client"],
+                    "timestamp": log["timestamp"],
+                    "status_code": log.get("status_code", None),
+                }
+            )
         return {
             "total_count": total_count,
             "logs": log_entries,

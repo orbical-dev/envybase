@@ -9,6 +9,7 @@ import datetime
 import random
 from decorator import loggers_route  # type: ignore
 
+
 def get_utc_now():
     return datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -24,7 +25,7 @@ app = FastAPI(
     title="Envybase Database Service",
     description="Database microservice for Envybase",
     version="0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
@@ -43,14 +44,16 @@ async def insert(data: Document):
         return {"status": "success", "message": "Document inserted successfully"}
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
-        await logs.insert_one({
-            "name": data.name,
-            "error": str(e),
-            "created_at": get_utc_now(),
-            "status": "error",
-            "error_id": error_id,
-            "type": "insert_error",
-        })
+        await logs.insert_one(
+            {
+                "name": data.name,
+                "error": str(e),
+                "created_at": get_utc_now(),
+                "status": "error",
+                "error_id": error_id,
+                "type": "insert_error",
+            }
+        )
         raise HTTPException(
             status_code=500, detail=f"Error during database insertion: {str(e)}"
         )
@@ -71,15 +74,17 @@ async def select(data: Query):
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
         log_name = getattr(data, "name", "N/A")
-        await logs.insert_one({
-            "name": log_name,
-            "query_attempted": query,
-            "error": str(e),
-            "created_at": get_utc_now(),
-            "status": "error",
-            "error_id": error_id,
-            "type": "select_error",
-        })
+        await logs.insert_one(
+            {
+                "name": log_name,
+                "query_attempted": query,
+                "error": str(e),
+                "created_at": get_utc_now(),
+                "status": "error",
+                "error_id": error_id,
+                "type": "select_error",
+            }
+        )
         raise HTTPException(
             status_code=500, detail=f"Error during database selection: {str(e)}"
         )
@@ -97,15 +102,17 @@ async def delete(data: Delete):
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
         log_name = getattr(data, "name", "N/A")
-        await logs.insert_one({
-            "name": log_name,
-            "query_attempted": query,
-            "error": str(e),
-            "created_at": get_utc_now(),
-            "status": "error",
-            "error_id": error_id,
-            "type": "delete_error",
-        })
+        await logs.insert_one(
+            {
+                "name": log_name,
+                "query_attempted": query,
+                "error": str(e),
+                "created_at": get_utc_now(),
+                "status": "error",
+                "error_id": error_id,
+                "type": "delete_error",
+            }
+        )
         raise HTTPException(
             status_code=500, detail=f"Error during database deletion: {str(e)}"
         )
@@ -126,16 +133,18 @@ async def update(data: Update):
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
         log_name = getattr(data, "name", "N/A")
-        await logs.insert_one({
-            "name": log_name,
-            "query_attempted": query,
-            "update_payload_attempted": update_payload,
-            "error": str(e),
-            "created_at": get_utc_now(),
-            "status": "error",
-            "error_id": error_id,
-            "type": "update_error",
-        })
+        await logs.insert_one(
+            {
+                "name": log_name,
+                "query_attempted": query,
+                "update_payload_attempted": update_payload,
+                "error": str(e),
+                "created_at": get_utc_now(),
+                "status": "error",
+                "error_id": error_id,
+                "type": "update_error",
+            }
+        )
         raise HTTPException(
             status_code=500, detail=f"Error during database update: {str(e)}"
         )

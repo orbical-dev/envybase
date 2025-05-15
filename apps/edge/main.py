@@ -10,13 +10,17 @@ from runtime import create_build_function
 import pytz
 import random
 
-utc_now = lambda: datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+def utc_now():
+    return datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
     yield
     await close_db_connection()
+
 
 app = FastAPI(
     title="Envybase Edge function Service",
@@ -25,10 +29,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 @app.get("/", summary="Health check")
 @loggers_route()
 async def read_root():
     return {"status": "healthy", "service": "edge"}
+
 
 @app.post("/create", summary="Create a new edge function")
 @loggers_route()
@@ -85,6 +91,7 @@ async def create_edge_function(data: EdgeFunction):
             "message": "Function failed to create. Please contact support and use the error ID below.",
             "error_id": error_id,
         }
+
 
 if __name__ == "__main__":
     print("Starting Envybase edge function Service...")
