@@ -124,7 +124,7 @@ async def update(data: Update):
     query = data.query
     update_payload = data.update
     try:
-        result = await database_db.update_one(query, update_payload)
+        result = await database_db.update_one(query, {"$set": update_payload})
         return {
             "status": "success",
             "matched_count": result.matched_count,
