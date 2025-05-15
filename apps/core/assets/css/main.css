@@ -1,9 +1,0 @@
-@import "tailwindcss";
-@import "@nuxt/ui";
-
-.body {
-    background-color: #212121;
-}
-.content {
-    margin: 1.5rem;
-}
