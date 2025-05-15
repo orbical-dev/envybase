@@ -70,7 +70,8 @@ except ValueError:
             "ISSECURE must be a boolean value, please set it in the .env file"
         )
     )
-if "google" in os.getenv("SOCIAL_LOGINS", ""):
+SOCIAL_LOGINS = os.getenv("SOCIAL_LOGINS", "")
+if "google" in SOCIAL_LOGINS:
     if not os.getenv("GOOGLE_CLIENT_ID"):
         raise ValueError(
             format_error_message(
@@ -87,3 +88,9 @@ if "google" in os.getenv("SOCIAL_LOGINS", ""):
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 
 ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)
+if not os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"):
+    print(
+        "\033[33m[WARN]\033[0m ACCESS_TOKEN_EXPIRE_MINUTES not set, using default value of 60"
+    )
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+DOCKER = os.getenv("DOCKER", False)
