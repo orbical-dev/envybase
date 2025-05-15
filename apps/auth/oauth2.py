@@ -46,8 +46,6 @@ if "google" in allowed_providers:
 
 
 @oauth2_router.get("/oauth2/login/{provider}")
-
-@api_loggers_route()
 async def login_with_oauth2(request: Request, provider: str, response: Response):
     """
     Redirects the user to the OAuth2 provider's login page.

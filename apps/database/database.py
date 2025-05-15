@@ -1,8 +1,6 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure
 from config import MONGO_URI
-import redis.asyncio as redis  # optional: change back to sync redis if not using async
-import asyncio
 
 # Async database references
 client = None
