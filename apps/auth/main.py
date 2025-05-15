@@ -13,6 +13,7 @@ from database import users
 from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
 from oauth2 import oauth2_router
+from stats import stats_router
 from starlette.middleware.sessions import SessionMiddleware
 
 app = FastAPI(
@@ -24,18 +25,19 @@ app = FastAPI(
 app.add_middleware(SessionMiddleware, secret_key=AUTH_KEY)
 
 # Include the routes from oauth2.py
-app.include_router(oauth2_router, tags=["oauth2"])
+app.include_router(oauth2_router, tags=["OAuth2"])
+app.include_router(stats_router, tags=["Statistics"])
 
 
 @app.get("/", summary="Health check")
 @loggers_route()
-def read_root(request: Request):
+def read_root(request: Request, response: Response):
     return {"status": "healthy", "service": "auth"}
 
 
 @app.get("/frontendinfo", summary="Get frontend info")
 @loggers_route()
-def frontendinfo(request: Request):
+def frontendinfo(request: Request, response: Response):
     return {
         "PASSWORD_MIN_LENGTH": PASSWORD_MIN_LENGTH,
         "PASSWORD_MAX_LENGTH": PASSWORD_MAX_LENGTH,
@@ -72,7 +74,7 @@ def login(request: Request, response: Response, data: models.LoginData):
 
 @app.post("/register")
 @loggers_route()
-def register(request: Request, data: models.RegisterData):
+def register(request: Request, response: Response, data: models.RegisterData):
     """
     Handles user registration by creating a new user with the provided email and password.
     Returns a success message if registration is successful, otherwise an error message.
@@ -93,11 +95,7 @@ def register(request: Request, data: models.RegisterData):
     users.insert_one(user_data)
     return {"status": "success", "message": "User registered successfully"}
 
-
-if DOCKER == "True":
-    host = "127.0.0.1"  # Internal only because it's going to be in a Docker network
-else:
-    host = "0.0.0.0"
+host = "0.0.0.0" if DOCKER else "127.0.0.1"
 
 if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")
