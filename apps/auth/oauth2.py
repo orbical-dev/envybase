@@ -19,7 +19,11 @@ allowed_providers = config.SOCIAL_LOGINS
 
 oauth2_router = APIRouter()
 
-utc_now = datetime.datetime.now(pytz.UTC)#.isoformat(timespec='milliseconds')
+def UTCNow():
+    """
+    Returns the current UTC time.
+    """
+    return datetime.datetime.now(pytz.UTC)
 
 oauth = OAuth()
 if "google" in allowed_providers:
@@ -84,7 +88,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             logs.insert_one(
                 {
                     "error": str(oauth_err),
-                    "created_at": utc_now,
+                    "created_at": UTCNow(),
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "400",
@@ -102,7 +106,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             logs.insert_one(
                 {
                     "error": str(e),
-                    "created_at": utc_now,
+                    "created_at": UTCNow(),
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "400",
@@ -137,7 +141,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                     logs.insert_one(
                         {
                             "error": str(e),
-                            "created_at": utc_now,
+                            "created_at": UTCNow(),
                             "status": "error",
                             "error_id": error_id,
                             "envy_error": "300x2",
@@ -157,7 +161,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             logs.insert_one(
                 {
                     "error": str(e),
-                    "created_at": utc_now,
+                    "created_at": UTCNow(),
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "300x3",
@@ -176,7 +180,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             logs.insert_one(
                 {
                     "error": "Email not provided by OAuth provider",
-                    "created_at": utc_now,
+                    "created_at": UTCNow(),
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "300x4",
