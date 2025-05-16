@@ -19,6 +19,9 @@ oauth2_router = APIRouter()
 
 
 def utc_now():
+    """
+    Returns the current UTC datetime as an aware datetime object.
+    """
     return datetime.datetime.now(pytz.UTC)
 
 
@@ -51,7 +54,13 @@ if "google" in allowed_providers:
 @oauth2_router.get("/oauth2/login/{provider}")
 async def login_with_oauth2(request: Request, provider: str, response: Response):
     """
-    Redirects the user to the OAuth2 provider's login page.
+    Initiates the OAuth2 login flow by redirecting the user to the specified provider's authentication page.
+    
+    Args:
+        provider: The name of the OAuth2 provider to use for authentication (e.g., "google").
+    
+    Raises:
+        HTTPException: If the specified provider is not supported or not enabled.
     """
     redirect_uri = f"http://127.0.0.1:3121/oauth2/callback/{provider}"  # request.url_for(oauth2_callback, provider=provider)
 
@@ -71,7 +80,9 @@ async def login_with_oauth2(request: Request, provider: str, response: Response)
 @oauth2_router.get("/oauth2/callback/{provider}")
 async def oauth2_callback(request: Request, provider: str, response: Response):
     """
-    Handles the callback from the OAuth2 provider after user authentication.
+    Handles the OAuth2 callback after user authentication, completing the login or registration process.
+    
+    Processes the callback from the OAuth2 provider (currently Google), retrieves and verifies the user's identity, and either registers a new user or logs in an existing one. Issues a JWT access token upon successful authentication. Returns an error response if authentication fails or required user information is missing.
     """
 
     if provider == "google" and "google" in allowed_providers:

@@ -7,7 +7,14 @@ stats_router = APIRouter()
 @stats_router.get("/stats")
 def get_stats():
     """
-    Returns authentication logs and their total count from the database.
+    Retrieves authentication log entries and their total count from the database.
+    
+    Returns:
+        A dictionary with the total number of authentication logs and a list of log entries,
+        each containing method, path, client, timestamp, and status code (if available).
+    
+    Raises:
+        HTTPException: If an error occurs while accessing or processing the database.
     """
     try:
         total_count = logs.count_documents({"service": "auth"})
