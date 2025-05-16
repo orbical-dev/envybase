@@ -1,7 +1,14 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
-from config import PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, AUTH_PORT, ISSECURE, AUTH_KEY, DOCKER
+from config import (
+    PASSWORD_MAX_LENGTH,
+    PASSWORD_MIN_LENGTH,
+    AUTH_PORT,
+    ISSECURE,
+    AUTH_KEY,
+    DOCKER,
+)
 from database import users
 from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
@@ -41,14 +48,19 @@ def frontendinfo(request: Request, response: Response):
 @loggers_route()
 def login(request: Request, response: Response, data: models.LoginData):
     """
-    Handles user login by verifying email and password.
-    Returns a success message if credentials are valid, otherwise an error message.
+    Authenticates a user by verifying email and password, and sets a JWT token cookie on success.
+
+    Raises:
+        HTTPException: If the email or password is incorrect.
+
+    Returns:
+        A JSON object indicating successful login and the user's email.
     """
     user = users.find_one({"email": data.email})
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(
             status_code=400,
-            detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--"
+            detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--",
         )
     token = create_jwt_token(
         {
@@ -69,13 +81,18 @@ def login(request: Request, response: Response, data: models.LoginData):
 @loggers_route()
 def register(request: Request, response: Response, data: models.RegisterData):
     """
-    Handles user registration by creating a new user with the provided email and password.
-    Returns a success message if registration is successful, otherwise an error message.
+    Registers a new user with the provided email, password, name, and username.
+
+    Raises:
+        HTTPException: If the email is already registered.
+
+    Returns:
+        A JSON object indicating successful registration.
     """
     if users.find_one({"email": data.email}):
         raise HTTPException(
             status_code=400,
-            detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--"
+            detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--",
         )
     hashed_password = hash_password(data.password)
     user_data = {
@@ -88,10 +105,10 @@ def register(request: Request, response: Response, data: models.RegisterData):
     users.insert_one(user_data)
     return {"status": "success", "message": "User registered successfully"}
 
+
 host = "0.0.0.0" if DOCKER else "127.0.0.1"
 
 if __name__ == "__main__":
     print("Starting Envybase Authentication Service...")
     uvicorn.run(app, host=host, port=int(AUTH_PORT))
     print("Stopping Envybase Authentication Service...")
-

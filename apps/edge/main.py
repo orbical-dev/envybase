@@ -1,7 +1,8 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 import uvicorn
 from config import EDGE_PORT, host
-from database import edge_db, logs
+from database import edge_db, logs, init_db, close_db_connection
 from models import EdgeFunction
 import datetime
 from decorator import loggers_route  # type: ignore
@@ -9,51 +10,85 @@ from runtime import create_build_function
 import pytz
 import random
 
-utc_now = datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+def utc_now():
+    """
+    Returns the current UTC time as a formatted string.
+
+    The returned string is in the format "YYYY-MM-DD HH:MM:SS".
+    """
+    return datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Asynchronous context manager for FastAPI app lifespan events.
+
+    Initializes the database connection when the application starts and closes it upon shutdown.
+    """
+    await init_db()
+    yield
+    await close_db_connection()
+
 
 app = FastAPI(
     title="Envybase Edge function Service",
     description="Edge functions microservice for Envybase",
     version="0",
+    lifespan=lifespan,
 )
 
 
 @app.get("/", summary="Health check")
 @loggers_route()
-def read_root():
+async def read_root():
+    """
+    Health check endpoint for the Edge service.
+
+    Returns:
+        A JSON object indicating the service is healthy.
+    """
     return {"status": "healthy", "service": "edge"}
 
 
-# TODO: Add authentication. NOT USER AUTH BUT UNIQUE AUTH SET IN THE .env
 @app.post("/create", summary="Create a new edge function")
 @loggers_route()
-def create_edge_function(data: EdgeFunction):
+async def create_edge_function(data: EdgeFunction):
     """
-    Create a new edge function.
+    Creates a new edge function and attempts to build it.
+
+    If a function with the same name already exists, returns an error message. On successful creation and build, returns a success message. If the build or database insertion fails, logs the error with a unique error ID and returns a message containing the error ID for support reference.
+
+    Args:
+        data: The edge function details to create.
+
+    Returns:
+        A dictionary indicating the result of the operation, including error information and a unique error ID if applicable.
     """
-    # Check if the function already exists
-    existing_function = edge_db.find_one({"name": data.name})
+    existing_function = await edge_db.find_one({"name": data.name})
     if existing_function:
         return {"status": "error", "message": "Function already exists"}
-    # Insert the new function into the database
+
     db_insert = {
         "name": data.name,
         "code": data.code,
-        "created_at": utc_now,
+        "created_at": utc_now(),
     }
+
     try:
-        edge_db.insert_one(db_insert)
+        await edge_db.insert_one(db_insert)
         try:
             create_build_function(data.code, data.name)
             return {"status": "success", "message": "Function created successfully"}
         except Exception as build_error:
             error_id = random.randint(100000, 9999999999999)
             print(f"Build error: {build_error}")
-            logs.insert_one(
+            await logs.insert_one(
                 {
                     "name": data.name,
                     "error": str(build_error),
-                    "created_at": utc_now,
+                    "created_at": utc_now(),
                     "status": "error",
                     "error_id": error_id,
                     "type": "build_error",
@@ -66,11 +101,11 @@ def create_edge_function(data: EdgeFunction):
     except Exception as db_error:
         error_id = random.randint(100000, 9999999999999)
         print(f"Database error: {db_error}")
-        logs.insert_one(
+        await logs.insert_one(
             {
                 "name": data.name,
                 "error": str(db_error),
-                "created_at": utc_now,
+                "created_at": utc_now(),
                 "status": "error",
                 "error_id": error_id,
                 "type": "db_error",

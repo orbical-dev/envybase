@@ -14,6 +14,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("logs")
 
 
+def UTCNow():
+    """
+    Returns the current UTC time.
+    """
+    return datetime.datetime.now(pytz.UTC)
+
+
 def real_ip(request: Request) -> str:
     """
     Get the real IP address of the client.
@@ -26,6 +33,12 @@ def real_ip(request: Request) -> str:
 
 
 def loggers_route():
+    """
+    Decorator for FastAPI route handlers that logs request and response details and records them in the database.
+
+    Logs the HTTP method, path, client IP, and timestamp for each request. On successful execution, updates the log entry with a status code. On exception, logs the error, extracts an error code from the exception message if present, updates the log entry with error details, and re-raises the exception.
+    """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -49,10 +62,9 @@ def loggers_route():
                 return func(*args, **kwargs)
 
             # Get UTC time
-            utc_now = datetime.now(pytz.UTC)
             # Log pre-execution
             logger.info(
-                f"[{utc_now}]"
+                f"[{UTCNow()}]"
                 f"Request: Method={request.method} "
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
@@ -62,7 +74,7 @@ def loggers_route():
                     "method": request.method,
                     "path": request.url.path,
                     "client": real_ip(request),
-                    "timestamp": utc_now,
+                    "timestamp": UTCNow(),
                     "service": "auth",
                 }
             )
@@ -77,7 +89,7 @@ def loggers_route():
                 # Log successful execution
                 status_code = 200
                 logger.info(
-                    f"[{utc_now}]"
+                    f"[{UTCNow()}]"
                     f"Response: Method={request.method} "
                     f"Path={request.url.path} "
                     f"Status={status_code} "
@@ -88,7 +100,7 @@ def loggers_route():
                         "method": request.method,
                         "path": request.url.path,
                         "client": real_ip(request),
-                        "timestamp": utc_now,
+                        "timestamp": UTCNow(),
                         "service": "auth",
                     },
                     {"$set": {"status_code": status_code}},
@@ -99,13 +111,13 @@ def loggers_route():
             except Exception as e:
                 # Log the error
                 logger.error(
-                    f"[{utc_now}]"
+                    f"[{UTCNow()}]"
                     f"Error: Method={request.method} "
                     f"Path={request.url.path} "
                     f"Error={str(e)} "
                     f"Client={real_ip(request)} "
                 )
-                match = re.search(r'ERROR:([0-9x]+)', str(e))
+                match = re.search(r"ERROR:([0-9x]+)", str(e))
                 error_code = match.group(1) if match else "500"
                 print(error_code)
                 logs.update_one(
@@ -113,7 +125,7 @@ def loggers_route():
                         "method": request.method,
                         "path": request.url.path,
                         "client": real_ip(request),
-                        "timestamp": utc_now,
+                        "timestamp": UTCNow(),
                         "service": "auth",
                     },
                     {"$set": {"error": str(e), "status_code": error_code}},
@@ -126,6 +138,12 @@ def loggers_route():
 
 
 def api_loggers_route():
+    """
+    Creates a decorator for async FastAPI route handlers to log request and response details, including errors, and record them in the database.
+
+    The decorator logs the HTTP method, path, client IP, and timestamp for each request. It updates the log entry with the response status code on success or with error details and a 500 status code on exception. If no valid Request object is found, the original function is called without logging.
+    """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -170,7 +188,9 @@ def api_loggers_route():
                 response = await func(*args, **kwargs)
 
                 # Log successful execution
-                status_code = response.status_code if hasattr(response, "status_code") else 200
+                status_code = (
+                    response.status_code if hasattr(response, "status_code") else 200
+                )
                 logger.info(
                     f"[{utc_now}]"
                     f"Response: Method={request.method} "

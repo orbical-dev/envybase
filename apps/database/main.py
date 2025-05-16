@@ -1,49 +1,74 @@
 from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
 import uvicorn
 from config import DATABASE_PORT, host
-from database import database_db, logs
+from database import database_db, logs, init_db, close_db_connection
 from models import Document, Query, Update, Delete
 import pytz
 import datetime
 import random
 from decorator import loggers_route  # type: ignore
 
-utc_now = datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+def get_utc_now():
+    """
+    Returns the current UTC time as a formatted string.
+
+    The returned string is in the format "YYYY-MM-DD HH:MM:SS".
+    """
+    return datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manages the application's startup and shutdown events for database connection.
+
+    Initializes the database connection when the application starts and ensures it is properly closed on shutdown.
+    """
+    await init_db()
+    yield
+    await close_db_connection()
+
 
 app = FastAPI(
     title="Envybase Database Service",
     description="Database microservice for Envybase",
     version="0",
+    lifespan=lifespan,
 )
 
 
 @app.get("/", summary="Health check")
 @loggers_route()
-def read_root():
+async def read_root():
+    """
+    Health check endpoint for the database service.
+
+    Returns a JSON object indicating the service is healthy.
+    """
     return {"status": "healthy", "service": "database"}
 
 
 @app.post("/insert", summary="Insert a new document into the database")
 @loggers_route()
-def insert(data: Document):
+async def insert(data: Document):
     """
-    Insert a new document into the database.
-    """
-    # Insert the new function into the database
-    db_insert = data
+    Inserts a new document into the database.
 
-    db_insert = data.model_dump()  # Convert Pydantic model to dict for MongoDB
+    Attempts to insert the provided document asynchronously. On success, returns a success status message. If an error occurs, logs the error details and raises an HTTP 500 exception.
+    """
     try:
-        database_db.insert_one(db_insert)
+        db_insert = data.model_dump()
+        await database_db.insert_one(db_insert)
         return {"status": "success", "message": "Document inserted successfully"}
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
-        print(f"Insert error: {e}")
-        logs.insert_one(
+        await logs.insert_one(
             {
                 "name": data.name,
                 "error": str(e),
-                "created_at": utc_now,
+                "created_at": get_utc_now(),
                 "status": "error",
                 "error_id": error_id,
                 "type": "insert_error",
@@ -56,40 +81,42 @@ def insert(data: Document):
 
 @app.post("/select", summary="Select a document from the database")
 @loggers_route()
-def select(data: Query):
+async def select(data: Query):
     """
-    Select a document from the database.
+    Retrieves documents from the database that match the specified query.
+
+    Args:
+        data: Query object containing the filter criteria.
+
+    Returns:
+        A dictionary with a success status and a list of matching documents. Each document's '_id' field is converted to a string.
+
+    Raises:
+        HTTPException: If an error occurs during the database query.
     """
     query = data.query
     try:
         cursor = database_db.find(query)
         result_list = []
-        for doc in cursor:
-            if "_id" in doc:  # Ensure _id exists
-                doc["_id"] = str(
-                    doc["_id"]
-                )  # Convert ObjectId to string for JSON serialization
+        async for doc in cursor:
+            if "_id" in doc:
+                doc["_id"] = str(doc["_id"])
             result_list.append(doc)
         return {"status": "success", "data": result_list}
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
-        # Safely access data.name for logging, assuming Query model might have it as Optional
-        log_name = (
-            data.name if hasattr(data, "name") and data.name is not None else "N/A"
-        )
-        print(f"Select error: {e}")
-        logs.insert_one(
+        log_name = getattr(data, "name", "N/A")
+        await logs.insert_one(
             {
                 "name": log_name,
-                "query_attempted": query,  # Log the query that failed
+                "query_attempted": query,
                 "error": str(e),
-                "created_at": utc_now,  # Use dynamic timestamp function
+                "created_at": get_utc_now(),
                 "status": "error",
                 "error_id": error_id,
                 "type": "select_error",
             }
         )
-        # Use HTTPException for consistency in error responses
         raise HTTPException(
             status_code=500, detail=f"Error during database selection: {str(e)}"
         )
@@ -97,37 +124,32 @@ def select(data: Query):
 
 @app.post("/delete", summary="Delete a document from the database")
 @loggers_route()
-def delete(data: Delete):
+async def delete(data: Delete):
     """
-    Deletes a document from the database.
+    Deletes a single document from the database matching the provided query.
+
+    Raises an HTTP 404 error if no document is found to delete. On failure, logs error details and raises an HTTP 500 error.
     """
     query = data.query
     try:
-        # Perform the delete operation
-        result = database_db.delete_one(query)
-        # Check if any document was deleted
+        result = await database_db.delete_one(query)
         if result.deleted_count == 0:
             raise HTTPException(status_code=404, detail="No document found to delete")
         return {"status": "success"}
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
-        # Safely access data.name for logging
-        log_name = (
-            data.name if hasattr(data, "name") and data.name is not None else "N/A"
-        )
-        print(f"Update error: {e}")
-        logs.insert_one(
+        log_name = getattr(data, "name", "N/A")
+        await logs.insert_one(
             {
                 "name": log_name,
                 "query_attempted": query,
                 "error": str(e),
-                "created_at": utc_now,  # Use dynamic timestamp function
+                "created_at": get_utc_now(),
                 "status": "error",
                 "error_id": error_id,
-                "type": "delete_error",  # Changed from select_error to update_error
+                "type": "delete_error",
             }
         )
-        # Use HTTPException for consistency in error responses
         raise HTTPException(
             status_code=500, detail=f"Error during database deletion: {str(e)}"
         )
@@ -135,18 +157,23 @@ def delete(data: Delete):
 
 @app.post("/update", summary="Update a document from the database")
 @loggers_route()
-def update(data: Update):
+async def update(data: Update):
     """
-    Update a document from the database.
+    Updates a single document in the database matching the specified query.
+
+    Args:
+        data: Contains the query to match and the update payload.
+
+    Returns:
+        A dictionary with the operation status and counts of matched and modified documents.
+
+    Raises:
+        HTTPException: If an error occurs during the update operation.
     """
     query = data.query
-    update_payload = data.update  # Assuming data.update is the MongoDB update document
+    update_payload = data.update
     try:
-        # Perform the update operation
-        # Assumes database_db has an update_many method similar to PyMongo
-        result = database_db.update_one(query, update_payload)
-
-        # Return a success response with counts of matched and modified documents
+        result = await database_db.update_one(query, {"$set": update_payload})
         return {
             "status": "success",
             "matched_count": result.matched_count,
@@ -154,24 +181,19 @@ def update(data: Update):
         }
     except Exception as e:
         error_id = random.randint(100000, 9999999999999)
-        # Safely access data.name for logging
-        log_name = (
-            data.name if hasattr(data, "name") and data.name is not None else "N/A"
-        )
-        print(f"Update error: {e}")
-        logs.insert_one(
+        log_name = getattr(data, "name", "N/A")
+        await logs.insert_one(
             {
                 "name": log_name,
                 "query_attempted": query,
-                "update_payload_attempted": update_payload,  # Log the update payload
+                "update_payload_attempted": update_payload,
                 "error": str(e),
-                "created_at": utc_now,  # Use dynamic timestamp function
+                "created_at": get_utc_now(),
                 "status": "error",
                 "error_id": error_id,
-                "type": "update_error",  # Changed from select_error to update_error
+                "type": "update_error",
             }
         )
-        # Use HTTPException for consistency in error responses
         raise HTTPException(
             status_code=500, detail=f"Error during database update: {str(e)}"
         )
