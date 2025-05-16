@@ -14,6 +14,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("logs")
 
 
+def UTCNow():
+    """
+    Returns the current UTC time.
+    """
+    return datetime.datetime.now(pytz.UTC)
+
+
 def real_ip(request: Request) -> str:
     """
     Get the real IP address of the client.
@@ -54,10 +61,9 @@ def loggers_route():
                 return func(*args, **kwargs)
 
             # Get UTC time
-            utc_now = datetime.now(pytz.UTC)
             # Log pre-execution
             logger.info(
-                f"[{utc_now}]"
+                f"[{UTCNow()}]"
                 f"Request: Method={request.method} "
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
@@ -67,7 +73,7 @@ def loggers_route():
                     "method": request.method,
                     "path": request.url.path,
                     "client": real_ip(request),
-                    "timestamp": utc_now,
+                    "timestamp": UTCNow(),
                     "service": "auth",
                 }
             )
@@ -82,7 +88,7 @@ def loggers_route():
                 # Log successful execution
                 status_code = 200
                 logger.info(
-                    f"[{utc_now}]"
+                    f"[{UTCNow()}]"
                     f"Response: Method={request.method} "
                     f"Path={request.url.path} "
                     f"Status={status_code} "
@@ -93,7 +99,7 @@ def loggers_route():
                         "method": request.method,
                         "path": request.url.path,
                         "client": real_ip(request),
-                        "timestamp": utc_now,
+                        "timestamp": UTCNow(),
                         "service": "auth",
                     },
                     {"$set": {"status_code": status_code}},
@@ -104,7 +110,7 @@ def loggers_route():
             except Exception as e:
                 # Log the error
                 logger.error(
-                    f"[{utc_now}]"
+                    f"[{UTCNow()}]"
                     f"Error: Method={request.method} "
                     f"Path={request.url.path} "
                     f"Error={str(e)} "
@@ -118,7 +124,7 @@ def loggers_route():
                         "method": request.method,
                         "path": request.url.path,
                         "client": real_ip(request),
-                        "timestamp": utc_now,
+                        "timestamp": UTCNow(),
                         "service": "auth",
                     },
                     {"$set": {"error": str(e), "status_code": error_code}},

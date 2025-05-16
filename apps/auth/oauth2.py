@@ -17,13 +17,11 @@ allowed_providers = config.SOCIAL_LOGINS
 
 oauth2_router = APIRouter()
 
-
 def utc_now():
     """
     Returns the current UTC datetime as an aware datetime object.
     """
     return datetime.datetime.now(pytz.UTC)
-
 
 oauth = OAuth()
 if "google" in allowed_providers:
