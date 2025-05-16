@@ -68,10 +68,10 @@ async def frontendinfo(request: Request, response: Response):
 async def login(request: Request, response: Response, data: models.LoginData):
     """
     Authenticates a user by verifying email and password, and sets a JWT token cookie on success.
-    
+
     Raises:
-        HTTPException: If the email or password is incorrect.
-    
+        HTTPException: If the email or password is incorrect. (Error code: 300x6)
+
     Returns:
         A JSON object indicating successful login and the user's email.
     """
@@ -79,7 +79,7 @@ async def login(request: Request, response: Response, data: models.LoginData):
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(
             status_code=401,
-            detail="Incorrect email or password",
+            detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--",
         )
     token = create_jwt_token({"sub": user["email"]})
     response.set_cookie(
@@ -95,23 +95,30 @@ async def login(request: Request, response: Response, data: models.LoginData):
 @loggers_route()
 async def register(request: Request, response: Response, data: models.RegisterData):
     """
-    Registers a new user with the provided email and password.
-    
+    Registers a new user with the provided email, password, name, and username.
+
     Raises:
-        HTTPException: If the email is already registered.
-    
+        HTTPException: If the email or username is already registered. (Error code: 300x5, 300x7)
+
     Returns:
         A JSON object indicating successful registration and the user's email.
     """
     if await get_users().find_one({"email": data.email}):
         raise HTTPException(
             status_code=400,
-            detail="Email already registered",
+            detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--",
+        )
+    if await get_users().find_one({"username": data.username}):
+        raise HTTPException(
+            status_code=400,
+            detail="Username already registered --ENVYSTART--ERROR:300x7--ENVYEND--",
         )
     hashed_password = hash_password(data.password)
     user_data = {
         "email": data.email,
         "password": hashed_password,
+        "name": data.name,
+        "username": data.username,
         "created_at": str(models.datetime.datetime.utcnow()),
     }
     await get_users().insert_one(user_data)
@@ -126,4 +133,3 @@ if __name__ == "__main__":
         reload=not DOCKER,
         factory=False,
     )
-
