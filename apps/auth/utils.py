@@ -31,13 +31,13 @@ def create_jwt_token(data: Dict) -> str:
 def decode_jwt_token(token: str) -> Dict:
     """
     Decodes and validates a JWT token.
-    
+
     Args:
         token: The JWT token string to decode.
-    
+
     Returns:
         The decoded payload as a dictionary.
-    
+
     Raises:
         ValueError: If the token is expired or invalid.
     """
@@ -55,7 +55,7 @@ def decode_jwt_token(token: str) -> Dict:
 def generate_username():
     """
     Generates a random 12-character username using ASCII letters and digits.
-    
+
     Returns:
         A securely generated username consisting of uppercase, lowercase letters, and digits.
     """

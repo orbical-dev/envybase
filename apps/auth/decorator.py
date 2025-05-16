@@ -35,9 +35,10 @@ def real_ip(request: Request) -> str:
 def loggers_route():
     """
     Decorator for FastAPI route handlers that logs request and response details and records them in the database.
-    
+
     Logs the HTTP method, path, client IP, and timestamp for each request. On successful execution, updates the log entry with a status code. On exception, logs the error, extracts an error code from the exception message if present, updates the log entry with error details, and re-raises the exception.
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -139,9 +140,10 @@ def loggers_route():
 def api_loggers_route():
     """
     Creates a decorator for async FastAPI route handlers to log request and response details, including errors, and record them in the database.
-    
+
     The decorator logs the HTTP method, path, client IP, and timestamp for each request. It updates the log entry with the response status code on success or with error details and a 500 status code on exception. If no valid Request object is found, the original function is called without logging.
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):

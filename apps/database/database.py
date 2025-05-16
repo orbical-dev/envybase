@@ -14,7 +14,7 @@ realtime = None
 async def init_db():
     """
     Asynchronously initializes MongoDB and (optionally) Redis connections.
-    
+
     Establishes a connection to the MongoDB server using the provided URI and sets up
     references to the main database and its collections. Verifies the MongoDB connection
     by issuing a ping command. Returns True if initialization succeeds. Raises an exception
@@ -51,7 +51,7 @@ async def init_db():
 async def close_db_connection():
     """
     Closes the MongoDB and Redis connections if they are open.
-    
+
     This function asynchronously closes the MongoDB client and Redis connection,
     resetting their global references to None.
     """

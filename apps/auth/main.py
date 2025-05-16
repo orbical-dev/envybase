@@ -49,10 +49,10 @@ def frontendinfo(request: Request, response: Response):
 def login(request: Request, response: Response, data: models.LoginData):
     """
     Authenticates a user by verifying email and password, and sets a JWT token cookie on success.
-    
+
     Raises:
         HTTPException: If the email or password is incorrect.
-    
+
     Returns:
         A JSON object indicating successful login and the user's email.
     """
@@ -82,10 +82,10 @@ def login(request: Request, response: Response, data: models.LoginData):
 def register(request: Request, response: Response, data: models.RegisterData):
     """
     Registers a new user with the provided email, password, name, and username.
-    
+
     Raises:
         HTTPException: If the email is already registered.
-    
+
     Returns:
         A JSON object indicating successful registration.
     """

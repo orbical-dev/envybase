@@ -8,11 +8,11 @@ stats_router = APIRouter()
 def get_stats():
     """
     Retrieves authentication log entries and their total count from the database.
-    
+
     Returns:
         A dictionary with the total number of authentication logs and a list of log entries,
         each containing method, path, client, timestamp, and status code (if available).
-    
+
     Raises:
         HTTPException: If an error occurs while accessing or processing the database.
     """
