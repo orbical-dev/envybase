@@ -40,6 +40,7 @@ def decode_jwt_token(token: str) -> Dict:
     except jwt.InvalidTokenError as e:
         raise ValueError(f"Invalid token: {str(e)}")
 
+
 def generate_username():
     characters = string.ascii_letters + string.digits
-    return ''.join(secrets.choice(characters) for _ in range(12))
+    return "".join(secrets.choice(characters) for _ in range(12))
