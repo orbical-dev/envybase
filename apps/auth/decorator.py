@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 import pytz
 import inspect
-from database import logs
+from database import get_logs
 from config import ISCLOUDFLARE
 import re
 
@@ -18,7 +18,7 @@ def UTCNow():
     """
     Returns the current UTC time.
     """
-    return datetime.datetime.now(pytz.UTC)
+    return datetime.now(pytz.UTC)
 
 
 def real_ip(request: Request) -> str:
@@ -56,114 +56,11 @@ def loggers_route():
                 logger.warning(
                     f"No request object found in route handler for {func.__name__}"
                 )
-                if hasattr(func, "__await__"):
-                    return await func(*args, **kwargs)
-                return func(*args, **kwargs)
-
-            # Get UTC time
-            # Log pre-execution
-            logger.info(
-                f"[{UTCNow()}]"
-                f"Request: Method={request.method} "
-                f"Path={request.url.path} "
-                f"Client={real_ip(request)} "
-            )
-            logs.insert_one(
-                {
-                    "method": request.method,
-                    "path": request.url.path,
-                    "client": real_ip(request),
-                    "timestamp": UTCNow(),
-                    "service": "auth",
-                }
-            )
-
-            try:
-                # Handle the function execution
-                if hasattr(func, "__await__"):
-                    response = await func(*args, **kwargs)
-                else:
-                    response = func(*args, **kwargs)
-
-                # Log successful execution
-                status_code = 200
-                logger.info(
-                    f"[{UTCNow()}]"
-                    f"Response: Method={request.method} "
-                    f"Path={request.url.path} "
-                    f"Status={status_code} "
-                    f"Client={real_ip(request)} "
-                )
-                logs.update_one(
-                    {
-                        "method": request.method,
-                        "path": request.url.path,
-                        "client": real_ip(request),
-                        "timestamp": UTCNow(),
-                        "service": "auth",
-                    },
-                    {"$set": {"status_code": status_code}},
-                )
-
-                return response
-
-            except Exception as e:
-                # Log the error
-                logger.error(
-                    f"[{UTCNow()}]"
-                    f"Error: Method={request.method} "
-                    f"Path={request.url.path} "
-                    f"Error={str(e)} "
-                    f"Client={real_ip(request)} "
-                )
-                match = re.search(r"ERROR:([0-9x]+)", str(e))
-                error_code = match.group(1) if match else "500"
-                print(error_code)
-                logs.update_one(
-                    {
-                        "method": request.method,
-                        "path": request.url.path,
-                        "client": real_ip(request),
-                        "timestamp": UTCNow(),
-                        "service": "auth",
-                    },
-                    {"$set": {"error": str(e), "status_code": error_code}},
-                )
-                raise
-
-        return wrapper
-
-    return decorator
-
-
-def api_loggers_route():
-    """
-    Creates a decorator for async FastAPI route handlers to log request and response details, including errors, and record them in the database.
-    
-    The decorator logs the HTTP method, path, client IP, and timestamp for each request. It updates the log entry with the response status code on success or with error details and a 500 status code on exception. If no valid Request object is found, the original function is called without logging.
-    """
-    def decorator(func: Callable):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            # Get the function's signature
-            sig = inspect.signature(func)
-
-            # Get the request parameter from the bound arguments
-            bound_args = sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-
-            # Get the request object
-            request = bound_args.arguments.get("request")
-
-            if not isinstance(request, Request):
-                logger.warning(
-                    f"No request object found in route handler for {func.__name__}"
-                )
+                # Always await the function, since FastAPI routes are async
                 return await func(*args, **kwargs)
 
             # Get UTC time
-            utc_now = datetime.now(pytz.UTC)
-
+            utc_now = UTCNow()
             # Log pre-execution
             logger.info(
                 f"[{utc_now}]"
@@ -171,7 +68,7 @@ def api_loggers_route():
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
             )
-            logs.insert_one(
+            await get_logs().insert_one(
                 {
                     "method": request.method,
                     "path": request.url.path,
@@ -182,13 +79,11 @@ def api_loggers_route():
             )
 
             try:
-                # Handle the function execution
-                response = await func(*args, **kwargs)
+                # Always await the function, since FastAPI routes are async
+                result = await func(*args, **kwargs)
 
                 # Log successful execution
-                status_code = (
-                    response.status_code if hasattr(response, "status_code") else 200
-                )
+                status_code = 200
                 logger.info(
                     f"[{utc_now}]"
                     f"Response: Method={request.method} "
@@ -196,7 +91,7 @@ def api_loggers_route():
                     f"Status={status_code} "
                     f"Client={real_ip(request)} "
                 )
-                logs.update_one(
+                await get_logs().update_one(
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -206,11 +101,14 @@ def api_loggers_route():
                     },
                     {"$set": {"status_code": status_code}},
                 )
-
-                return response
+                return result
 
             except Exception as e:
-                # Log the error
+                # Extract error code if present in the exception message
+                error_code = 500
+                match = re.search(r"ERROR:(\d+)", str(e))
+                if match:
+                    error_code = int(match.group(1))
                 logger.error(
                     f"[{utc_now}]"
                     f"Error: Method={request.method} "
@@ -218,7 +116,7 @@ def api_loggers_route():
                     f"Error={str(e)} "
                     f"Client={real_ip(request)} "
                 )
-                logs.update_one(
+                await get_logs().update_one(
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -226,7 +124,7 @@ def api_loggers_route():
                         "timestamp": utc_now,
                         "service": "auth",
                     },
-                    {"$set": {"error": str(e), "status_code": 500}},
+                    {"$set": {"error": str(e), "status_code": error_code}},
                 )
                 raise
 

@@ -4,7 +4,7 @@ import config
 import configparser
 import jwt
 from jwt import PyJWKClient
-from database import users, logs
+from database import get_users, get_logs
 from utils import create_jwt_token, generate_username
 import datetime
 import pytz
@@ -59,6 +59,9 @@ async def login_with_oauth2(request: Request, provider: str, response: Response)
     
     Raises:
         HTTPException: If the specified provider is not supported or not enabled.
+        :param response:
+        :param provider:
+        :param request:
     """
     redirect_uri = f"http://127.0.0.1:3121/oauth2/callback/{provider}"  # request.url_for(oauth2_callback, provider=provider)
 
@@ -92,7 +95,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
         except OAuthError as oauth_err:
             error_id = random.randint(100000, 9999999999999)
             print(f"OAuth2 Error: {oauth_err}")
-            logs.insert_one(
+            await get_logs().insert_one(
                 {
                     "error": str(oauth_err),
                     "created_at": utc_now(),
@@ -110,7 +113,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
         except Exception as e:
             error_id = random.randint(100000, 9999999999999)
             print(f"Exception: {str(e)}")
-            logs.insert_one(
+            await get_logs().insert_one(
                 {
                     "error": str(e),
                     "created_at": utc_now(),
@@ -145,7 +148,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                 except jwt.PyJWTError as e:
                     error_id = random.randint(100000, 9999999999999)
                     print(f"Failed to decode id_token: {str(e)}")
-                    logs.insert_one(
+                    await get_logs().insert_one(
                         {
                             "error": str(e),
                             "created_at": utc_now(),
@@ -166,7 +169,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
         except Exception as e:
             error_id = random.randint(100000, 9999999999999)
             print(f"Failed to fetch user info: {str(e)}")
-            logs.insert_one(
+            await get_logs().insert_one(
                 {
                     "error": str(e),
                     "created_at": utc_now(),
@@ -185,7 +188,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
         if not email:
             error_id = random.randint(100000, 9999999999999)
             print("Email not provided by OAuth provider")
-            logs.insert_one(
+            await get_logs().insert_one(
                 {
                     "error": "Email not provided by OAuth provider",
                     "created_at": utc_now(),
@@ -210,7 +213,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
     #     return {"status": "success", "user": user}
     else:
         raise HTTPException(status_code=400, detail="Unsupported provider")
-    user = users.find_one({"email": email})
+    user = await get_users().find_one({"email": email})
     if not user:
         user_data = {
             "email": email,
@@ -221,7 +224,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             "given_name": given_name,
             "family_name": family_name,
         }
-        users.insert_one(user_data)
+        await get_users().insert_one(user_data)
         access_token = create_jwt_token({"sub": user_data["sub"]})
         return {
             "status": "success",
