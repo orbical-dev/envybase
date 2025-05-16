@@ -10,13 +10,27 @@ from runtime import create_build_function
 import pytz
 import random
 
-utc_now = lambda: datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
+def utc_now():
+    """
+    Returns the current UTC time as a formatted string.
+    
+    The returned string is in the format "YYYY-MM-DD HH:MM:SS".
+    """
+    return datetime.datetime.now(pytz.UTC).strftime("%Y-%m-%d %H:%M:%S")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    Asynchronous context manager for FastAPI app lifespan events.
+    
+    Initializes the database connection when the application starts and closes it upon shutdown.
+    """
     await init_db()
     yield
     await close_db_connection()
+
 
 app = FastAPI(
     title="Envybase Edge function Service",
@@ -25,16 +39,32 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+
 @app.get("/", summary="Health check")
 @loggers_route()
 async def read_root():
+    """
+    Health check endpoint for the Edge service.
+    
+    Returns:
+        A JSON object indicating the service is healthy.
+    """
     return {"status": "healthy", "service": "edge"}
+
 
 @app.post("/create", summary="Create a new edge function")
 @loggers_route()
 async def create_edge_function(data: EdgeFunction):
     """
-    Create a new edge function.
+    Creates a new edge function and attempts to build it.
+    
+    If a function with the same name already exists, returns an error message. On successful creation and build, returns a success message. If the build or database insertion fails, logs the error with a unique error ID and returns a message containing the error ID for support reference.
+    
+    Args:
+        data: The edge function details to create.
+    
+    Returns:
+        A dictionary indicating the result of the operation, including error information and a unique error ID if applicable.
     """
     existing_function = await edge_db.find_one({"name": data.name})
     if existing_function:
@@ -85,6 +115,7 @@ async def create_edge_function(data: EdgeFunction):
             "message": "Function failed to create. Please contact support and use the error ID below.",
             "error_id": error_id,
         }
+
 
 if __name__ == "__main__":
     print("Starting Envybase edge function Service...")

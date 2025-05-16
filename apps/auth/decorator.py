@@ -33,6 +33,11 @@ def real_ip(request: Request) -> str:
 
 
 def loggers_route():
+    """
+    Decorator for FastAPI route handlers that logs request and response details and records them in the database.
+    
+    Logs the HTTP method, path, client IP, and timestamp for each request. On successful execution, updates the log entry with a status code. On exception, logs the error, extracts an error code from the exception message if present, updates the log entry with error details, and re-raises the exception.
+    """
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -111,7 +116,7 @@ def loggers_route():
                     f"Error={str(e)} "
                     f"Client={real_ip(request)} "
                 )
-                match = re.search(r'ERROR:([0-9x]+)', str(e))
+                match = re.search(r"ERROR:([0-9x]+)", str(e))
                 error_code = match.group(1) if match else "500"
                 print(error_code)
                 logs.update_one(
@@ -132,6 +137,11 @@ def loggers_route():
 
 
 def api_loggers_route():
+    """
+    Creates a decorator for async FastAPI route handlers to log request and response details, including errors, and record them in the database.
+    
+    The decorator logs the HTTP method, path, client IP, and timestamp for each request. It updates the log entry with the response status code on success or with error details and a 500 status code on exception. If no valid Request object is found, the original function is called without logging.
+    """
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -176,7 +186,9 @@ def api_loggers_route():
                 response = await func(*args, **kwargs)
 
                 # Log successful execution
-                status_code = response.status_code if hasattr(response, "status_code") else 200
+                status_code = (
+                    response.status_code if hasattr(response, "status_code") else 200
+                )
                 logger.info(
                     f"[{utc_now}]"
                     f"Response: Method={request.method} "

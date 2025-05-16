@@ -4,11 +4,7 @@ FROM python:3.13.3-slim
 
 
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends apt-utils && \
-    apt-get install -y --no-install-recommends \
-        python3 \
-        pip \ 
-        && \
+    apt-get install -y --no-install-recommends apt-utils pip python3 && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
