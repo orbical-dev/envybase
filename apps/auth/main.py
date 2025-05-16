@@ -48,8 +48,13 @@ def frontendinfo(request: Request, response: Response):
 @loggers_route()
 def login(request: Request, response: Response, data: models.LoginData):
     """
-    Handles user login by verifying email and password.
-    Returns a success message if credentials are valid, otherwise an error message.
+    Authenticates a user by verifying email and password, and sets a JWT token cookie on success.
+    
+    Raises:
+        HTTPException: If the email or password is incorrect.
+    
+    Returns:
+        A JSON object indicating successful login and the user's email.
     """
     user = users.find_one({"email": data.email})
     if not user or not verify_password(data.password, user["password"]):
@@ -76,8 +81,13 @@ def login(request: Request, response: Response, data: models.LoginData):
 @loggers_route()
 def register(request: Request, response: Response, data: models.RegisterData):
     """
-    Handles user registration by creating a new user with the provided email and password.
-    Returns a success message if registration is successful, otherwise an error message.
+    Registers a new user with the provided email, password, name, and username.
+    
+    Raises:
+        HTTPException: If the email is already registered.
+    
+    Returns:
+        A JSON object indicating successful registration.
     """
     if users.find_one({"email": data.email}):
         raise HTTPException(
