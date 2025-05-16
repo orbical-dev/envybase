@@ -98,7 +98,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             await get_logs().insert_one(
                 {
                     "error": str(oauth_err),
-                    "created_at": utc_now(),
+                    "timestamp": utc_now(),
+                    "service": "error",
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "400",
@@ -116,7 +117,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             await get_logs().insert_one(
                 {
                     "error": str(e),
-                    "created_at": utc_now(),
+                    "timestamp": utc_now(),
+                    "service": "error",
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "400",
@@ -151,7 +153,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
                     await get_logs().insert_one(
                         {
                             "error": str(e),
-                            "created_at": utc_now(),
+                            "timestamp": utc_now(),
+                            "service": "error",
                             "status": "error",
                             "error_id": error_id,
                             "envy_error": "300x2",
@@ -172,7 +175,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             await get_logs().insert_one(
                 {
                     "error": str(e),
-                    "created_at": utc_now(),
+                    "timestamp": utc_now(),
+                    "service": "error",
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "300x3",
@@ -191,7 +195,8 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             await get_logs().insert_one(
                 {
                     "error": "Email not provided by OAuth provider",
-                    "created_at": utc_now(),
+                    "timestamp": utc_now(),
+                    "service": "error",
                     "status": "error",
                     "error_id": error_id,
                     "envy_error": "300x4",
@@ -223,6 +228,7 @@ async def oauth2_callback(request: Request, provider: str, response: Response):
             "picture": picture,
             "given_name": given_name,
             "family_name": family_name,
+            "created_at": utc_now(),
         }
         await get_users().insert_one(user_data)
         access_token = create_jwt_token({"sub": user_data["sub"]})

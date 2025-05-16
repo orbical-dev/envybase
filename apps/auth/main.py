@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
+from apps.auth.decorator import UTCNow
 from config import (
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
@@ -16,6 +17,7 @@ from oauth2 import oauth2_router
 from stats import stats_router
 from starlette.middleware.sessions import SessionMiddleware
 from contextlib import asynccontextmanager
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -35,6 +37,7 @@ async def lifespan(app: FastAPI):
     finally:
         await close_db_connection()
 
+
 app = FastAPI(
     title="Envybase Authentication Service",
     description="Authentication microservice for Envybase",
@@ -47,6 +50,7 @@ app.add_middleware(SessionMiddleware, secret_key=AUTH_KEY)
 # Include the routes from oauth2.py
 app.include_router(oauth2_router, tags=["OAuth2"])
 app.include_router(stats_router, tags=["Statistics"])
+
 
 @app.get("/", summary="Health check")
 @loggers_route()
@@ -91,6 +95,7 @@ async def login(request: Request, response: Response, data: models.LoginData):
     )
     return {"status": "success", "email": user["email"]}
 
+
 @app.post("/register")
 @loggers_route()
 async def register(request: Request, response: Response, data: models.RegisterData):
@@ -119,7 +124,7 @@ async def register(request: Request, response: Response, data: models.RegisterDa
         "password": hashed_password,
         "name": data.name,
         "username": data.username,
-        "created_at": str(models.datetime.datetime.utcnow()),
+        "created_at": UTCNow(),
     }
     await get_users().insert_one(user_data)
     return {"status": "success", "email": data.email}

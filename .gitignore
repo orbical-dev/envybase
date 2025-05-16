@@ -246,4 +246,6 @@ fabric.properties
 .pypirc
 
 # Uvicorn certs
-*.
+*.pem
+
+.idea
