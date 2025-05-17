@@ -18,7 +18,7 @@ def UTCNow():
     """
     Returns the current UTC time.
     """
-    return datetime.datetime.now(pytz.UTC)
+    return datetime.now(pytz.UTC)
 
 
 def real_ip(request: Request) -> str:
@@ -69,7 +69,7 @@ def loggers_route():
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
             )
-            logs.insert_one(
+            await logs.insert_one(
                 {
                     "method": request.method,
                     "path": request.url.path,
