@@ -52,7 +52,7 @@ def generate_dockerfile(requirements):
     # Sanitize requirements to prevent command injection
     requirements = requirements.replace('"', '\\"').replace(";", "\\;")
 
-    dockerfile = f"""FROM python:3.11-slim
+    dockerfile = f"""FROM python:3.13-slim
 
 RUN pip install {requirements}
 
