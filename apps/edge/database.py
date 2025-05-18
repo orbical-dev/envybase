@@ -12,12 +12,12 @@ logs = None
 async def init_db():
     """
     Asynchronously initializes the MongoDB connection and sets global database references.
-    
+
     Establishes a connection to the MongoDB server using Motor, verifies connectivity, and assigns global variables for the database and key collections. Raises an exception if the connection fails.
-    
+
     Returns:
         True if the connection is successfully established.
-    
+
     Raises:
         Exception: If unable to connect to MongoDB.
     """
@@ -49,7 +49,7 @@ async def init_db():
 async def close_db_connection():
     """
     Closes the MongoDB client connection if it exists.
-    
+
     Resets the global client reference to None after closing the connection.
     """
     global client

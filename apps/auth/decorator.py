@@ -35,9 +35,10 @@ def real_ip(request: Request) -> str:
 def loggers_route():
     """
     Decorator for FastAPI route handlers that logs request and response details and records them in the database.
-    
+
     Logs the HTTP method, path, client IP, and timestamp for each request. On successful execution, updates the log entry with a status code. On exception, logs the error, extracts an error code from the exception message if present, updates the log entry with error details, and re-raises the exception.
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -92,6 +93,7 @@ def loggers_route():
                     f"Client={real_ip(request)} "
                 )
                 await get_logs().update_one(
+
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -136,7 +138,9 @@ def loggers_route():
 def api_loggers_route():
     """
     Decorator for FastAPI APIRouter endpoints to log request and response details and record them in the database.
+
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -159,6 +163,7 @@ def api_loggers_route():
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
             )
+
             await get_logs().insert_one(
                 {
                     "method": request.method,
@@ -179,6 +184,7 @@ def api_loggers_route():
                     f"Status={status_code} "
                     f"Client={real_ip(request)} "
                 )
+
                 await get_logs().update_one(
                     {
                         "method": request.method,
@@ -204,6 +210,7 @@ def api_loggers_route():
                     f"Client={real_ip(request)} "
                 )
                 await get_logs().update_one(
+
                     {
                         "method": request.method,
                         "path": request.url.path,

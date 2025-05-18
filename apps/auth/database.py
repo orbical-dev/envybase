@@ -2,17 +2,21 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure
 from config import MONGO_URI
 
-# Global variables to store DB connections
+
+# Globals to hold the database connection and collections
+
 client = None
 _db = None
 _users = None
 _logs = None
 
 async def init_db():
+
     """
     Asynchronously initializes the MongoDB connection and sets global database references.
     """
     global client, _db, _users, _logs
+
 
     try:
         client = AsyncIOMotorClient(
@@ -22,6 +26,7 @@ async def init_db():
             serverSelectionTimeoutMS=5000,
             waitQueueTimeoutMS=5000,
         )
+
         await client.admin.command("ping")
         DB_NAME = "envybase"
         _db = client[DB_NAME]
@@ -33,6 +38,7 @@ async def init_db():
         raise Exception(
             f"Failed to connect to MongoDB: {str(e)}. Please check your connection settings."
         ) from e
+
 
 def get_db():
     global _db
@@ -59,5 +65,5 @@ async def close_db_connection():
     global client
     if client:
         client.close()
+        print("[MongoDB] Connection closed.")
         client = None
-

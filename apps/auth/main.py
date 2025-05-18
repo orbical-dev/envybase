@@ -10,6 +10,7 @@ from config import (
     AUTH_KEY,
     DOCKER,
 )
+
 from database import get_users, init_db, close_db_connection
 from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
@@ -47,7 +48,7 @@ app = FastAPI(
 
 app.add_middleware(SessionMiddleware, secret_key=AUTH_KEY)
 
-# Include the routes from oauth2.py
+# Include the routes from oauth2.py and stats.py
 app.include_router(oauth2_router, tags=["OAuth2"])
 app.include_router(stats_router, tags=["Statistics"])
 
@@ -85,7 +86,9 @@ async def login(request: Request, response: Response, data: models.LoginData):
             status_code=401,
             detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--",
         )
+
     token = create_jwt_token({"sub": user["email"]})
+
     response.set_cookie(
         key="access_token",
         value=token,
@@ -126,8 +129,10 @@ async def register(request: Request, response: Response, data: models.RegisterDa
         "username": data.username,
         "created_at": UTCNow(),
     }
+
     await get_users().insert_one(user_data)
     return {"status": "success", "email": data.email}
+
 
 
 if __name__ == "__main__":

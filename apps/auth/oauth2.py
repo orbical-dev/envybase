@@ -15,6 +15,7 @@ ini = configparser.ConfigParser()
 
 oauth2_router = APIRouter()
 
+
 def utc_now():
     return datetime.datetime.now(pytz.UTC)
 
