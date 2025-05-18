@@ -18,7 +18,7 @@ def UTCNow():
     """
     Returns the current UTC time.
     """
-    return datetime.datetime.now(pytz.UTC)
+    return datetime.now(pytz.UTC)
 
 
 def real_ip(request: Request) -> str:
@@ -69,7 +69,8 @@ def loggers_route():
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
             )
-            logs.insert_one(
+            # Insert log entry synchronously
+            await logs.insert_one(
                 {
                     "method": request.method,
                     "path": request.url.path,
@@ -95,7 +96,8 @@ def loggers_route():
                     f"Status={status_code} "
                     f"Client={real_ip(request)} "
                 )
-                logs.update_one(
+                # Update log entry synchronously
+                await logs.update_one(
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -120,7 +122,8 @@ def loggers_route():
                 match = re.search(r"ERROR:([0-9x]+)", str(e))
                 error_code = match.group(1) if match else "500"
                 print(error_code)
-                logs.update_one(
+                # Update log entry synchronously
+                await logs.update_one(
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -173,7 +176,7 @@ def api_loggers_route():
                 f"Path={request.url.path} "
                 f"Client={real_ip(request)} "
             )
-            logs.insert_one(
+            await logs.insert_one(
                 {
                     "method": request.method,
                     "path": request.url.path,
@@ -198,7 +201,7 @@ def api_loggers_route():
                     f"Status={status_code} "
                     f"Client={real_ip(request)} "
                 )
-                logs.update_one(
+                await logs.update_one(
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -220,7 +223,7 @@ def api_loggers_route():
                     f"Error={str(e)} "
                     f"Client={real_ip(request)} "
                 )
-                logs.update_one(
+                await logs.update_one(
                     {
                         "method": request.method,
                         "path": request.url.path,

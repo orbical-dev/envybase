@@ -1,21 +1,19 @@
-from pymongo import MongoClient
+from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure
 from config import MONGO_URI
-import atexit
 
-# Initialize with None so we can check if connection is established
+# Globals to hold the database connection and collections
 client = None
 db = None
 users = None
 logs = None
 
-
-def init_db():
-    """Initialize database connection."""
+async def init_db():
+    """Asynchronously initialize database connection."""
     global client, db, users, logs
 
     try:
-        client = MongoClient(
+        client = AsyncIOMotorClient(
             MONGO_URI,
             maxPoolSize=50,
             connectTimeoutMS=5000,
@@ -23,31 +21,22 @@ def init_db():
             waitQueueTimeoutMS=5000,
         )
         # Verify connection
-        client.admin.command("ping")
+        await client.admin.command("ping")
 
-        # Database name defined as a constant until configuration is updated
         DB_NAME = "envybase"
         db = client[DB_NAME]
         users = db["users"]
         logs = db["logs"]
-
-        # Register cleanup function
-        atexit.register(close_db_connection)
-
-        return True
+        print("[MongoDB] Connection initialized successfully.")
     except ConnectionFailure as e:
         raise Exception(
             f"Failed to connect to MongoDB: {str(e)}. Please check your connection settings."
         ) from e
 
-
-def close_db_connection():
-    """Close database connection."""
+async def close_db_connection():
+    """Asynchronously close the database connection."""
     global client
     if client:
         client.close()
+        print("[MongoDB] Connection closed.")
         client = None
-
-
-# Initialize connection on module import
-init_db()
