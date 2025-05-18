@@ -10,13 +10,12 @@ _db = None
 _users = None
 _logs = None
 
-async def init_db():
 
+async def init_db():
     """
     Asynchronously initializes the MongoDB connection and sets global database references.
     """
     global client, _db, _users, _logs
-
 
     try:
         client = AsyncIOMotorClient(
@@ -43,20 +42,29 @@ async def init_db():
 def get_db():
     global _db
     if _db is None:
-        raise RuntimeError("Database is not initialized. Did you call init_db()?")  # Changed to RuntimeError for clarity
+        raise RuntimeError(
+            "Database is not initialized. Did you call init_db()?"
+        )  # Changed to RuntimeError for clarity
     return _db
+
 
 def get_users():
     global _users
     if _users is None:
-        raise RuntimeError("Users collection is not initialized. Did you call init_db()?")  # Changed to RuntimeError for clarity
+        raise RuntimeError(
+            "Users collection is not initialized. Did you call init_db()?"
+        )  # Changed to RuntimeError for clarity
     return _users
+
 
 def get_logs():
     global _logs
     if _logs is None:
-        raise RuntimeError("Logs collection is not initialized. Did you call init_db()?")  # Changed to RuntimeError for clarity
+        raise RuntimeError(
+            "Logs collection is not initialized. Did you call init_db()?"
+        )  # Changed to RuntimeError for clarity
     return _logs
+
 
 async def close_db_connection():
     """
