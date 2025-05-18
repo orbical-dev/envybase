@@ -39,4 +39,3 @@ async def get_stats():
             status_code=500,
             detail=f"Error retrieving statistics: {str(e)}",
         )
-

@@ -40,4 +40,3 @@ class RegisterData(BaseModel):
         max_length=USERNAME_MAX_LENGTH,
         description=f"Username of the user, must be {USERNAME_MIN_LENGTH}-{USERNAME_MAX_LENGTH} characters",
     )
-

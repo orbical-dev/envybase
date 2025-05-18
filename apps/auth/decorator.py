@@ -51,7 +51,7 @@ def loggers_route():
 
             # Get the request object
             request = bound_args.arguments.get("request")
-            response = bound_args.arguments.get("response")
+            bound_args.arguments.get("response")
 
             if not isinstance(request, Request):
                 logger.warning(
@@ -93,7 +93,6 @@ def loggers_route():
                     f"Client={real_ip(request)} "
                 )
                 await get_logs().update_one(
-
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -148,7 +147,7 @@ def api_loggers_route():
             bound_args = sig.bind(*args, **kwargs)
             bound_args.apply_defaults()
             request = bound_args.arguments.get("request")
-            response = bound_args.arguments.get("response")
+            bound_args.arguments.get("response")
 
             if not isinstance(request, Request):
                 logger.warning(
@@ -210,7 +209,6 @@ def api_loggers_route():
                     f"Client={real_ip(request)} "
                 )
                 await get_logs().update_one(
-
                     {
                         "method": request.method,
                         "path": request.url.path,
@@ -225,4 +223,3 @@ def api_loggers_route():
         return wrapper
 
     return decorator
-

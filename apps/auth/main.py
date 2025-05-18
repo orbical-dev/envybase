@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
         yield
     except Exception as e:
         import sys
+
         print(f"Failed to initialize database: {e}", file=sys.stderr)
         # Do not yield here: let the exception propagate so FastAPI/Uvicorn exits with error
         raise
@@ -132,7 +133,6 @@ async def register(request: Request, response: Response, data: models.RegisterDa
 
     await get_users().insert_one(user_data)
     return {"status": "success", "email": data.email}
-
 
 
 if __name__ == "__main__":
