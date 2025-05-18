@@ -7,6 +7,7 @@
 [![Linting](https://github.com/orbical-dev/envybase/actions/workflows/lint.yml/badge.svg)](https://github.com/orbical-dev/envybase/actions/workflows/lint.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+![Project License](https://img.shields.io/github/license/orbical-dev/envybase)
 [![SDK License: MIT](https://img.shields.io/badge/SDK%20License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 Envybase is an open-source Backend-as-a-Service (BaaS) platform written in Python, designed to simplify and accelerate backend development. It provides a suite of ready-to-use services for common application needs, allowing developers to focus on frontend and business logic.
