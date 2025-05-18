@@ -70,7 +70,7 @@ def loggers_route():
                 f"Client={real_ip(request)} "
             )
             try:
-                logs.insert_one(
+                await logs.insert_one(
                     {
                         "request_id": request_id,
                         "method": request.method,

@@ -86,6 +86,22 @@ if "google" in SOCIAL_LOGINS:
         )
     GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+if "github" in SOCIAL_LOGINS:
+    if not os.getenv("GITHUB_CLIENT_ID"):
+        raise ValueError(
+            format_error_message(
+                "GITHUB_CLIENT_ID not set, please set it in the .env file"
+            )
+        )
+    if not os.getenv("GITHUB_CLIENT_SECRET"):
+        raise ValueError(
+            format_error_message(
+                "GITHUB_CLIENT_SECRET not set, please set it in the .env file"
+            )
+        )
+    GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+    GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
+
 
 ISCLOUDFLARE = os.getenv("ISCLOUDFLARE", False)
 if not os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"):

@@ -18,3 +18,4 @@
 |  `300x4`   |    Email not provided by provider    |
 |  `300x5`   |       Email already registered       |
 |  `300x6`   |     Incorrect email or password      |
+|  `300x7`   |     Username already registered      |

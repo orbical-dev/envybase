@@ -47,14 +47,23 @@ services:
     image: ghcr.io/orbical-dev/envybase-core:stable
     build: apps/core
     ports:
-      - "3120:80"
+      - "3000:3000"
   mongodb:
     networks:
       - envy
     image: mongo:latest
+    volumes:
+     - mongodb_data:/data/db
+
   redis:
     networks:
       - envy
     image: redis:latest
+    volumes:
+     - redis_data:/data
+
 networks:
   envy:
+volumes:
+  mongodb_data:
+  redis_data:

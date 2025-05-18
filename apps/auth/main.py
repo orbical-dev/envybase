@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
+from apps.auth.decorator import UTCNow
 from config import (
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
@@ -9,35 +10,59 @@ from config import (
     AUTH_KEY,
     DOCKER,
 )
-from database import users
+
+from database import get_users, init_db, close_db_connection
 from utils import hash_password, verify_password, create_jwt_token
 from decorator import loggers_route
 from oauth2 import oauth2_router
 from stats import stats_router
 from starlette.middleware.sessions import SessionMiddleware
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Manages the application's startup and shutdown events for database connection.
+
+    Initializes the database connection when the application starts and ensures it is properly closed on shutdown.
+    """
+    try:
+        await init_db()
+        yield
+    except Exception as e:
+        import sys
+
+        print(f"Failed to initialize database: {e}", file=sys.stderr)
+        # Do not yield here: let the exception propagate so FastAPI/Uvicorn exits with error
+        raise
+    finally:
+        await close_db_connection()
+
 
 app = FastAPI(
     title="Envybase Authentication Service",
     description="Authentication microservice for Envybase",
     version="0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(SessionMiddleware, secret_key=AUTH_KEY)
 
-# Include the routes from oauth2.py
+# Include the routes from oauth2.py and stats.py
 app.include_router(oauth2_router, tags=["OAuth2"])
 app.include_router(stats_router, tags=["Statistics"])
 
 
 @app.get("/", summary="Health check")
 @loggers_route()
-def read_root(request: Request, response: Response):
+async def read_root(request: Request, response: Response):
     return {"status": "healthy", "service": "auth"}
 
 
 @app.get("/frontendinfo", summary="Get frontend info")
 @loggers_route()
-def frontendinfo(request: Request, response: Response):
+async def frontendinfo(request: Request, response: Response):
     return {
         "PASSWORD_MIN_LENGTH": PASSWORD_MIN_LENGTH,
         "PASSWORD_MAX_LENGTH": PASSWORD_MAX_LENGTH,
@@ -46,27 +71,25 @@ def frontendinfo(request: Request, response: Response):
 
 @app.post("/login")
 @loggers_route()
-def login(request: Request, response: Response, data: models.LoginData):
+async def login(request: Request, response: Response, data: models.LoginData):
     """
     Authenticates a user by verifying email and password, and sets a JWT token cookie on success.
 
     Raises:
-        HTTPException: If the email or password is incorrect.
+        HTTPException: If the email or password is incorrect. (Error code: 300x6)
 
     Returns:
         A JSON object indicating successful login and the user's email.
     """
-    user = users.find_one({"email": data.email})
+    user = await get_users().find_one({"email": data.email})
     if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(
-            status_code=400,
+            status_code=401,
             detail="Incorrect email or password --ENVYSTART--ERROR:300x6--ENVYEND--",
         )
-    token = create_jwt_token(
-        {
-            "sub": user["sub"],
-        }
-    )
+
+    token = create_jwt_token({"sub": user["email"]})
+
     response.set_cookie(
         key="access_token",
         value=token,
@@ -74,25 +97,30 @@ def login(request: Request, response: Response, data: models.LoginData):
         secure=ISSECURE,
         samesite="lax",
     )
-    return {"status": "success", "logged_in_as": user["email"]}
+    return {"status": "success", "email": user["email"]}
 
 
 @app.post("/register")
 @loggers_route()
-def register(request: Request, response: Response, data: models.RegisterData):
+async def register(request: Request, response: Response, data: models.RegisterData):
     """
     Registers a new user with the provided email, password, name, and username.
 
     Raises:
-        HTTPException: If the email is already registered.
+        HTTPException: If the email or username is already registered. (Error code: 300x5, 300x7)
 
     Returns:
-        A JSON object indicating successful registration.
+        A JSON object indicating successful registration and the user's email.
     """
-    if users.find_one({"email": data.email}):
+    if await get_users().find_one({"email": data.email}):
         raise HTTPException(
             status_code=400,
             detail="Email already registered --ENVYSTART--ERROR:300x5--ENVYEND--",
+        )
+    if await get_users().find_one({"username": data.username}):
+        raise HTTPException(
+            status_code=400,
+            detail="Username already registered --ENVYSTART--ERROR:300x7--ENVYEND--",
         )
     hashed_password = hash_password(data.password)
     user_data = {
@@ -100,15 +128,18 @@ def register(request: Request, response: Response, data: models.RegisterData):
         "password": hashed_password,
         "name": data.name,
         "username": data.username,
-        "sub": data.email,
+        "created_at": UTCNow(),
     }
-    users.insert_one(user_data)
-    return {"status": "success", "message": "User registered successfully"}
 
+    await get_users().insert_one(user_data)
+    return {"status": "success", "email": data.email}
 
-host = "0.0.0.0" if DOCKER else "127.0.0.1"
 
 if __name__ == "__main__":
-    print("Starting Envybase Authentication Service...")
-    uvicorn.run(app, host=host, port=int(AUTH_PORT))
-    print("Stopping Envybase Authentication Service...")
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=AUTH_PORT,
+        reload=not DOCKER,
+        factory=False,
+    )

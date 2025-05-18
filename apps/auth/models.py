@@ -33,7 +33,7 @@ class RegisterData(BaseModel):
         max_length=PASSWORD_MAX_LENGTH,
         description=f"Must be {PASSWORD_MIN_LENGTH}-{PASSWORD_MAX_LENGTH} characters",
     )
-    name: str = Field(..., description="Name of the user")
+    name: str = Field(..., max_length=100, description="Name of the user")
     username: str = Field(
         ...,
         min_length=USERNAME_MIN_LENGTH,

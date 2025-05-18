@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
-from database import logs
+from database import get_logs
 
 stats_router = APIRouter()
 
 
 @stats_router.get("/stats")
-def get_stats():
+async def get_stats():
     """
     Retrieves authentication log entries and their total count from the database.
 
@@ -17,9 +17,10 @@ def get_stats():
         HTTPException: If an error occurs while accessing or processing the database.
     """
     try:
-        total_count = logs.count_documents({"service": "auth"})
+        logs = get_logs()
+        total_count = await logs.count_documents({"service": "auth"})
         log_entries = []
-        for log in logs.find({"service": "auth"}):
+        async for log in logs.find({"service": "auth"}):
             log_entries.append(
                 {
                     "method": log["method"],
