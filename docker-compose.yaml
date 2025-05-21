@@ -2,9 +2,11 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "3120:80"
+      - "3100:3100" # Might want to change this port later.
+
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
     depends_on:
       - core
       - auth
@@ -13,29 +15,15 @@ services:
     networks:
       - envy
 
-  edge:
+  core:
     networks:
       - envy
-    depends_on:
-      - mongodb
-    image: ghcr.io/orbical-dev/envybase-edge:stable
-    build: apps/edge
+    image: ghcr.io/orbical-dev/envybase-core:stable
+    build: apps/core
+    expose:
+      - "3000"
     environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - ISCLOUDFLARE=False
-      - DOCKER=True
-
-  database:
-    networks:
-      - envy
-    depends_on:
-      - mongodb
-    image: ghcr.io/orbical-dev/envybase-database:stable
-    build: apps/database
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - ISCLOUDFLARE=False
-      - DOCKER=True
+      - DOCKER=False
 
   auth:
     depends_on:
@@ -44,8 +32,10 @@ services:
     build: apps/auth
     networks:
       - envy
+    expose:
+      - "3121"
     environment:
-      - DOCKER=True
+      - DOCKER=False
       - MONGO_URI=mongodb://mongodb:27017
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -58,14 +48,33 @@ services:
       - ISSECURE=False
       - ISCLOUDFLARE=False
 
-  core:
+  database:
     networks:
       - envy
-    image: ghcr.io/orbical-dev/envybase-core:stable
-    build: apps/core
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-database:stable
+    build: apps/database
     expose:
-      - "3000"
+      - "3122"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=False
+      - DOCKER=False
 
+  edge:
+    networks:
+      - envy
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-edge:stable
+    build: apps/edge
+    expose:
+      - "3123"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=False
+      - DOCKER=False
   mongodb:
     networks:
       - envy
