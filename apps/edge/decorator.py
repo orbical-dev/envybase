@@ -70,7 +70,7 @@ def loggers_route():
                 f"Client={real_ip(request)} "
             )
             try:
-                logs.insert_one(
+                await logs.insert_one(
                     {
                         "request_id": request_id,
                         "method": request.method,
@@ -103,7 +103,7 @@ def loggers_route():
                 )
                 try:
                     # Update using the request_id for accurate matching
-                    logs.update_one(
+                    await logs.update_one(
                         {"request_id": request_id},
                         {
                             "$set": {
@@ -130,7 +130,7 @@ def loggers_route():
                     f"Client={real_ip(request)} "
                 )
                 try:
-                    logs.update_one(
+                    await logs.update_one(
                         {"request_id": request_id},
                         {"$set": {"error": str(e)}},
                     )
