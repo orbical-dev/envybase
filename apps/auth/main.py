@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Response, Request
 import uvicorn
 import models
-from apps.auth.decorator import UTCNow
+from decorator import UTCNow
 from config import (
     PASSWORD_MAX_LENGTH,
     PASSWORD_MIN_LENGTH,
