@@ -13,6 +13,7 @@ import re
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("logs")
 
+service = "auth" # Change this, developers for your service that you're working on :(
 
 def UTCNow():
     """
@@ -75,7 +76,7 @@ def loggers_route():
                     "path": request.url.path,
                     "client": real_ip(request),
                     "timestamp": utc_now,
-                    "service": "auth",
+                    "service": service,
                 }
             )
 
@@ -98,7 +99,7 @@ def loggers_route():
                         "path": request.url.path,
                         "client": real_ip(request),
                         "timestamp": utc_now,
-                        "service": "auth",
+                        "service": service,
                     },
                     {"$set": {"status_code": status_code}},
                 )
@@ -123,7 +124,7 @@ def loggers_route():
                         "path": request.url.path,
                         "client": real_ip(request),
                         "timestamp": utc_now,
-                        "service": "auth",
+                        "service": service,
                     },
                     {"$set": {"error": str(e), "status_code": error_code}},
                 )
@@ -169,7 +170,7 @@ def api_loggers_route():
                     "path": request.url.path,
                     "client": real_ip(request),
                     "timestamp": utc_now,
-                    "service": "auth",
+                    "service": service,
                 }
             )
 
@@ -190,7 +191,7 @@ def api_loggers_route():
                         "path": request.url.path,
                         "client": real_ip(request),
                         "timestamp": utc_now,
-                        "service": "auth",
+                        "service": service,
                     },
                     {"$set": {"status_code": status_code}},
                 )
@@ -214,7 +215,7 @@ def api_loggers_route():
                         "path": request.url.path,
                         "client": real_ip(request),
                         "timestamp": utc_now,
-                        "service": "auth",
+                        "service": service,
                     },
                     {"$set": {"error": str(e), "status_code": error_code}},
                 )
