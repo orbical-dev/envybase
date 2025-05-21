@@ -1,26 +1,30 @@
 services:
-  edge:
+  nginx:
+    image: nginx:latest
+    ports:
+      - "3100:3100" # Might want to change this port later.
+
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+
+    depends_on:
+      - core
+      - auth
+      - database
+      - edge
     networks:
       - envy
-    depends_on:
-      - mongodb
-    image: ghcr.io/orbical-dev/envybase-edge:stable
-    build: apps/edge
-    environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - ISCLOUDFLARE=False
-      - DOCKER=True
-  database:
+
+  core:
     networks:
       - envy
-    depends_on:
-      - mongodb
-    image: ghcr.io/orbical-dev/envybase-database:stable
-    build: apps/database
+    image: ghcr.io/orbical-dev/envybase-core:stable
+    build: apps/core
+    expose:
+      - "3000"
     environment:
-      - MONGO_URI=mongodb://mongodb:27017
-      - ISCLOUDFLARE=False
-      - DOCKER=True
+      - DOCKER=False
+
   auth:
     depends_on:
       - mongodb
@@ -28,8 +32,10 @@ services:
     build: apps/auth
     networks:
       - envy
+    expose:
+      - "3121"
     environment:
-      - DOCKER=True
+      - DOCKER=False
       - MONGO_URI=mongodb://mongodb:27017
       - REDIS_HOST=redis
       - REDIS_PORT=6379
@@ -41,29 +47,51 @@ services:
       - AUTH_KEY=your_auth_key
       - ISSECURE=False
       - ISCLOUDFLARE=False
-  core:
+
+  database:
     networks:
       - envy
-    image: ghcr.io/orbical-dev/envybase-core:stable
-    build: apps/core
-    ports:
-      - "3000:3000"
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-database:stable
+    build: apps/database
+    expose:
+      - "3122"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=False
+      - DOCKER=False
+
+  edge:
+    networks:
+      - envy
+    depends_on:
+      - mongodb
+    image: ghcr.io/orbical-dev/envybase-edge:stable
+    build: apps/edge
+    expose:
+      - "3123"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017
+      - ISCLOUDFLARE=False
+      - DOCKER=False
   mongodb:
     networks:
       - envy
     image: mongo:latest
     volumes:
-     - mongodb_data:/data/db
+      - mongodb_data:/data/db
 
   redis:
     networks:
       - envy
     image: redis:latest
     volumes:
-     - redis_data:/data
+      - redis_data:/data
 
 networks:
   envy:
+
 volumes:
   mongodb_data:
   redis_data:
