@@ -78,7 +78,7 @@ async def log_and_raise(
     exc: Exception,
     error_type: str,
     envy_code: str,
-    error_id: int,
+    error_id: int | None = None,
     http_status: int = 400,
 ):
     await get_logs().insert_one(
@@ -93,10 +93,16 @@ async def log_and_raise(
             "status_code": http_status,
         }
     )
-    raise HTTPException(
-        status_code=http_status,
-        detail=f"{error_type}: {str(exc)}--ENVYSTART--ERROR:{envy_code};ERROR_ID:{error_id}--ENVYEND--",
-    )
+    if error_id:
+        raise HTTPException(
+            status_code=http_status,
+            detail=f"{error_type}: {str(exc)}--ENVYSTART--ERROR:{envy_code};ERROR_ID:{error_id}--ENVYEND--",
+        )
+    else:
+        raise HTTPException(
+            status_code=http_status,
+            detail=f"{error_type}: {str(exc)}--ENVYSTART--ERROR:{envy_code}--ENVYEND--",
+        )
 
 
 async def fetch_user_info(client, token, provider: str, error_id: int) -> dict:
