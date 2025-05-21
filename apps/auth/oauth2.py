@@ -78,7 +78,7 @@ async def log_and_raise(
     exc: Exception,
     error_type: str,
     envy_code: str,
-    error_id: int = None,
+    error_id: int | None = None,
     http_status: int = 400,
 ):
     await get_logs().insert_one(
