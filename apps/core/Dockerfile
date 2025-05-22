@@ -1,4 +1,4 @@
-FROM ghcr.io/orbical-dev/envycore:main
+FROM node:18-alpine
 
 WORKDIR /app
 
