@@ -1,4 +1,4 @@
-FROM python:3.13.3-slim
+FROM ghcr.io/orbical-dev/envycore:main
 
 # install apt-utils and update before installing other packages
 
