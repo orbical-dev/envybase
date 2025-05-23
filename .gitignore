@@ -249,3 +249,5 @@ fabric.properties
 *.pem
 
 .idea
+
+.vscode
