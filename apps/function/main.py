@@ -1,12 +1,12 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 import uvicorn
-from config import EDGE_PORT, host
-from database import edge_db, logs, init_db, close_db_connection
-from models import EdgeFunction
+from config import host, FUNC_PORT
+from database import logs, init_db, close_db_connection, func_db
 import datetime
 from decorator import loggers_route  # type: ignore
 from runtime import create_build_function
+from models import Function
 import pytz
 import random
 
@@ -33,8 +33,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Envybase Edge function Service",
-    description="Edge functions microservice for Envybase",
+    title="Envybase Function Service",
+    description="Functions microservice for Envybase",
     version="0",
     lifespan=lifespan,
 )
@@ -44,29 +44,29 @@ app = FastAPI(
 @loggers_route()
 async def read_root():
     """
-    Health check endpoint for the Edge service.
+    Health check endpoint for the Function service.
 
     Returns:
         A JSON object indicating the service is healthy.
     """
-    return {"status": "healthy", "service": "edge"}
+    return {"status": "healthy", "service": "function"}
 
 
-@app.post("/create", summary="Create a new edge function")
+@app.post("/create", summary="Create a new function function")
 @loggers_route()
-async def create_edge_function(data: EdgeFunction):
+async def create_function(data: Function):
     """
-    Creates a new edge function and attempts to build it.
+    Creates a new function and attempts to build it.
 
     If a function with the same name already exists, returns an error message. On successful creation and build, returns a success message. If the build or database insertion fails, logs the error with a unique error ID and returns a message containing the error ID for support reference.
 
     Args:
-        data: The edge function details to create.
+        data: The function details to create.
 
     Returns:
         A dictionary indicating the result of the operation, including error information and a unique error ID if applicable.
     """
-    existing_function = await edge_db.find_one({"name": data.name})
+    existing_function = await func_db.find_one({"name": data.name})
     if existing_function:
         return {"status": "error", "message": "Function already exists"}
 
@@ -77,7 +77,7 @@ async def create_edge_function(data: EdgeFunction):
     }
 
     try:
-        await edge_db.insert_one(db_insert)
+        await func_db.insert_one(db_insert)
         try:
             create_build_function(data.code, data.name)
             return {"status": "success", "message": "Function created successfully"}
@@ -88,7 +88,7 @@ async def create_edge_function(data: EdgeFunction):
                 {
                     "name": data.name,
                     "error": str(build_error),
-                    "created_at": utc_now(),
+                    "timestamp": utc_now(),
                     "status": "error",
                     "error_id": error_id,
                     "type": "build_error",
@@ -105,7 +105,7 @@ async def create_edge_function(data: EdgeFunction):
             {
                 "name": data.name,
                 "error": str(db_error),
-                "created_at": utc_now(),
+                "timestamp": utc_now(),
                 "status": "error",
                 "error_id": error_id,
                 "type": "db_error",
@@ -118,6 +118,6 @@ async def create_edge_function(data: EdgeFunction):
 
 
 if __name__ == "__main__":
-    print("Starting Envybase edge function Service...")
-    uvicorn.run(app, host=host, port=int(EDGE_PORT))
-    print("Stopping Envybase edge function Service...")
+    print("Starting Envybase Function Service...")
+    uvicorn.run(app, host=host, port=int(FUNC_PORT))
+    print("Stopping Envybase Function Service...")

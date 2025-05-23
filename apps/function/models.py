@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class EdgeFunction(BaseModel):
+class Function(BaseModel):
     """Edge function model."""
 
     name: str
