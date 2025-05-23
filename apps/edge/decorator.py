@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 def real_ip(request: Request) -> str:
     """
-    Get the real IP address of the client.
-    If the request is from Cloudflare, use the 'CF-Connecting-IP' header.
-    Otherwise, use the 'X-Real-IP' header or the remote address.
+    Determines the client's real IP address from a FastAPI Request.
+    
+    If Cloudflare integration is enabled, returns the IP from the 'CF-Connecting-IP' header; otherwise, uses the 'X-Real-IP' header or falls back to the remote address.
     """
     default_ip = "0.0.0.0"
 
@@ -33,6 +33,15 @@ def real_ip(request: Request) -> str:
 
 
 def loggers_route():
+    """
+    Creates a decorator for FastAPI route handlers that logs request and response details,
+    including client IP, method, path, status code, and timestamps, and stores them
+    asynchronously in a database.
+    
+    The decorator generates a unique request ID for each call, logs metadata before and after
+    the route handler executes, and updates the log entry with response or error information.
+    If the route handler raises an exception, the error is logged and recorded in the database.
+    """
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
