@@ -1,18 +1,19 @@
 # apps/core/Dockerfile
-FROM node:18-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
-# Copy package files
+# Copy only the package files first for caching npm install
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install dependencies (only production dependencies)
+ENV NODE_ENV=production
+RUN npm ci --only=production --no-progress --silent
 
-# Copy source code
+# Now copy the rest of the app
 COPY . .
 
-# Build the application
+# Build the Nuxt app
 RUN npm run build
 
 # Expose port

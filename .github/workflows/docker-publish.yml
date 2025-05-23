@@ -44,6 +44,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Cache npm for ${{ matrix.service.name }}
+        if: matrix.service.name == 'core'
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles(format('{0}/package-lock.json', matrix.service.context)) }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -80,7 +89,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=${{ matrix.service.name }}
           platforms: linux/amd64,linux/arm64
 
-  # Optional: Create a summary of built images
   summary:
     needs: build-and-publish
     runs-on: ubuntu-latest
