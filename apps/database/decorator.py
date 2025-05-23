@@ -19,14 +19,14 @@ logger = logging.getLogger(__name__)
 def real_ip(request: Request) -> str:
     """
     Retrieves the real client IP address from a FastAPI request.
-    
+
     If the ISCLOUDFLARE configuration flag is set, the IP is taken from the 'CF-Connecting-IP'
     header; otherwise, it is taken from the 'X-Real-IP' header. Falls back to the request's
     client host or '0.0.0.0' if unavailable.
-    
+
     Args:
         request: The FastAPI Request object.
-    
+
     Returns:
         The determined client IP address as a string.
     """
@@ -47,6 +47,7 @@ def loggers_route():
     these events in a database log collection. Handles both synchronous and asynchronous
     route functions, and logs errors with associated metadata.
     """
+
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):

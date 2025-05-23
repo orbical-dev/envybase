@@ -5,7 +5,7 @@ from config import MONGO_URI
 # Global variables to store DB connections
 client = None
 db = None
-edge_db = None
+func_db = None
 logs = None
 
 
@@ -21,7 +21,7 @@ async def init_db():
     Raises:
         Exception: If unable to connect to MongoDB.
     """
-    global client, db, edge_db, logs
+    global client, db, func_db, logs
 
     try:
         client = AsyncIOMotorClient(
@@ -36,7 +36,7 @@ async def init_db():
 
         DB_NAME = "envybase"
         db = client[DB_NAME]
-        edge_db = db["edge_functions"]
+        func_db = db["functions"]
         logs = db["logs"]
 
         return True

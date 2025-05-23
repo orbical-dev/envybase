@@ -11,7 +11,7 @@ services:
       - core
       - auth
       - database
-      - edge
+      - function
     networks:
       - envy
 
@@ -62,13 +62,13 @@ services:
       - ISCLOUDFLARE=False
       - DOCKER=False
 
-  edge:
+  func:
     networks:
       - envy
     depends_on:
       - mongodb
-    image: ghcr.io/orbical-dev/envybase-edge:stable
-    build: apps/edge
+    image: ghcr.io/orbical-dev/envybase-func:stable
+    build: apps/function
     expose:
       - "3123"
     environment:

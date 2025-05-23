@@ -1,0 +1,22 @@
+{
+    "cSpell.words": [
+        "envybase",
+        "Envybase",
+        "headlessui",
+        "ISCLOUDFLARE",
+        "ISSECURE",
+        "Nuxt",
+        "orbical"
+    ],
+    "files.associations": {
+    "*.css": "tailwindcss"
+    },
+    "editor.quickSuggestions": {
+        "strings": "on"
+    },
+    "tailwindCSS.classAttributes": ["class", "ui"],
+    "tailwindCSS.experimental.classRegex": [
+        ["ui:\\s*{([^)]*)\\s*}", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    ]
+    
+}
