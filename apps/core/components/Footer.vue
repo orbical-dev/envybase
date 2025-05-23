@@ -1,4 +1,3 @@
-
 <template>
   <footer class="footer">
     <div class="container">
@@ -8,6 +7,20 @@
 </template>
 
 <script setup>
+/**
+ * Footer component for the Envybase application.
+ * 
+ * Displays copyright information with the current year.
+ * The year is automatically updated based on the current date.
+ * 
+ * @component Footer
+ * @example
+ * <Footer />
+ */
+/**
+ * Computed property that returns the current year.
+ * @type {number} The current year (e.g., 2025)
+ */
 const currentYear = new Date().getFullYear()
 </script>
 
