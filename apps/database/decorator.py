@@ -1,10 +1,3 @@
-"""
-Logging decorator for FastAPI route handlers.
-
-This module provides decorators for logging HTTP requests and responses,
-including real IP address detection and database logging functionality.
-"""
-
 from functools import wraps
 from typing import Callable
 from fastapi import Request
@@ -25,16 +18,17 @@ logger = logging.getLogger(__name__)
 
 def real_ip(request: Request) -> str:
     """
-    Extract the real IP address from an HTTP request.
+    Retrieves the real client IP address from a FastAPI request.
 
-    This function attempts to determine the actual client IP address
-    by checking various headers that may contain forwarded IP information.
+    If the ISCLOUDFLARE configuration flag is set, the IP is taken from the 'CF-Connecting-IP'
+    header; otherwise, it is taken from the 'X-Real-IP' header. Falls back to the request's
+    client host or '0.0.0.0' if unavailable.
 
     Args:
-        request (Request): The FastAPI request object.
+        request: The FastAPI Request object.
 
     Returns:
-        str: The client's real IP address.
+        The determined client IP address as a string.
     """
     default_ip = "0.0.0.0"
 
@@ -48,48 +42,12 @@ def real_ip(request: Request) -> str:
 
 def loggers_route():
     """
-    Decorator that adds logging functionality to FastAPI route handlers.
-
-    This decorator logs incoming requests including IP addresses, user agents,
-    and request timing information to a MongoDB collection.
-
-    Args:
-        func (callable): The route handler function to be decorated.
-
-    Returns:
-        callable: The wrapped function with logging capabilities.
+    Creates a decorator for FastAPI route handlers that logs request and response details,
+    including method, path, client IP, status code, and timing information, and records
+    these events in a database log collection. Handles both synchronous and asynchronous
+    route functions, and logs errors with associated metadata.
     """
-    def decorator(func: Callable):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            sig = inspect.signature(func)
-            bound_args = sig.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            request = bound_args.arguments.get("request")
 
-            if not isinstance(request, Request):
-                logger.warning(
-                    f"No request object found in route handler for {func.__name__}"
-                )
-                # Use asyncio.iscoroutinefunction to detect async functions
-                if asyncio.iscoroutinefunction(func):
-                    return await func(*args, **kwargs)
-                return func(*args, **kwargs)
-
-            request_time = datetime.now(pytz.UTC)
-            utc_now = request_time.strftime("%Y-%m-%d %H:%M:%S")
-            request_id = str(uuid.uuid4())
-
-This decorator logs incoming requests including IP addresses, user agents,
-and request timing information to a MongoDB collection.
-
-Args:
-    func (callable): The route handler function to be decorated.
-
-Returns:
-    callable: The wrapped function with logging capabilities.
-"""
-def loggers_route():
     def decorator(func: Callable):
         @wraps(func)
         async def wrapper(*args, **kwargs):
@@ -119,6 +77,7 @@ def loggers_route():
             )
             try:
                 await logs.insert_one(
+                    {
                         "request_id": request_id,
                         "method": request.method,
                         "path": request.url.path,
