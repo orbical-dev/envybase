@@ -85,6 +85,8 @@ jobs:
     needs: build-and-publish
     runs-on: ubuntu-latest
     if: always()
+    permissions:
+      contents: read
     steps:
       - name: Build Summary
         run: |
