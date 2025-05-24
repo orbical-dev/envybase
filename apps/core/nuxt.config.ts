@@ -7,6 +7,14 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/icon',
-    '@nuxt/ui'
-  ]
+    '@nuxt/ui',
+    '@nuxtjs/color-mode',
+  ],
+  colorMode: {
+    classSuffix: '',
+    preference: 'system', // default value
+    fallback: 'dark', // fallback value if not system preference found
+  },
+
+  css: ['~/assets/css/main.css']
 })
