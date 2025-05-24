@@ -61,8 +61,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017
       - ISCLOUDFLARE=False
       - DOCKER=False
-
-  func:
+  function:
     networks:
       - envy
     depends_on:
