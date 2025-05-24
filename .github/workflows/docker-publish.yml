@@ -3,17 +3,11 @@ name: Build and Publish Multi-Service Docker Images
 on:
   release:
     types: [published]
-  push:
-    branches:
-      - main
-      - develop
-  pull_request:
-    branches:
-      - main
 
 env:
   REGISTRY: ghcr.io
-  BASE_IMAGE_NAME: orbical-dev/envybase
+  # Use the repository owner and name for the base image name
+  BASE_IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-publish:
@@ -69,13 +63,14 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}-${{ matrix.service.name }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=ref,event=tag
+            # Generates SemVer tag from the Git tag (e.g., 1.2.4 from tag 1.2.4 or v1.2.4)
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=stable,enable=${{ github.event_name == 'release' }}
+            # Tags the release as 'latest'
+            type=raw,value=latest,enable={{is_default_branch}} # is_default_branch might not be true for release, make it always true for release
+            # More robust way to ensure 'latest' is only for actual releases if that's intended:
+            # type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            # For your specific request (always 'latest' on release):
+            type=raw,value=latest
 
       - name: Build and push ${{ matrix.service.name }} image
         uses: docker/build-push-action@v5
@@ -98,10 +93,14 @@ jobs:
     steps:
       - name: Build Summary
         run: |
-          echo "## 🐳 Docker Images Built" >> $GITHUB_STEP_SUMMARY
-          echo "| Service | Status | Image |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|--------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Core | ✅ | ghcr.io/orbical-dev/envybase-core |" >> $GITHUB_STEP_SUMMARY
-          echo "| Auth | ✅ | ghcr.io/orbical-dev/envybase-auth |" >> $GITHUB_STEP_SUMMARY
-          echo "| Database | ✅ | ghcr.io/orbical-dev/envybase-database |" >> $GITHUB_STEP_SUMMARY
-          echo "| Function | ✅ | ghcr.io/orbical-dev/envybase-func |" >> $GITHUB_STEP_SUMMARY
+          echo "## 🐳 Docker Images Built (Release: ${{ github.event.release.tag_name }})" >> $GITHUB_STEP_SUMMARY
+          echo "| Service  | Status | Image                                                                 |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|-----------------------------------------------------------------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Core     | ✅     | ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}-core                     |" >> $GITHUB_STEP_SUMMARY
+          echo "| Auth     | ✅     | ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}-auth                     |" >> $GITHUB_STEP_SUMMARY
+          echo "| Database | ✅     | ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}-database                 |" >> $GITHUB_STEP_SUMMARY
+          echo "| Function | ✅     | ${{ env.REGISTRY }}/${{ env.BASE_IMAGE_NAME }}-func                     |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tags created for each image (example for 'core', applies to all):" >> $GITHUB_STEP_SUMMARY
+          echo "- \`$(echo ${{ github.event.release.tag_name }} | sed 's/^v//')\` (version)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`latest\`" >> $GITHUB_STEP_SUMMARY
