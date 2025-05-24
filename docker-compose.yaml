@@ -18,7 +18,7 @@ services:
   core:
     networks:
       - envy
-    image: ghcr.io/orbical-dev/envybase-core:stable
+    image: ghcr.io/orbical-dev/envybase-core:latest
     build: apps/core
     expose:
       - "3000"
@@ -28,7 +28,7 @@ services:
   auth:
     depends_on:
       - mongodb
-    image: ghcr.io/orbical-dev/envybase-auth:stable
+    image: ghcr.io/orbical-dev/envybase-auth:latest
     build: apps/auth
     networks:
       - envy
@@ -53,7 +53,7 @@ services:
       - envy
     depends_on:
       - mongodb
-    image: ghcr.io/orbical-dev/envybase-database:stable
+    image: ghcr.io/orbical-dev/envybase-database:latest
     build: apps/database
     expose:
       - "3122"
@@ -67,7 +67,7 @@ services:
       - envy
     depends_on:
       - mongodb
-    image: ghcr.io/orbical-dev/envybase-func:stable
+    image: ghcr.io/orbical-dev/envybase-func:latest
     build: apps/function
     expose:
       - "3123"
